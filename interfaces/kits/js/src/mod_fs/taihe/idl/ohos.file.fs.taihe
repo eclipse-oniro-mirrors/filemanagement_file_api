@@ -1848,6 +1848,7 @@ export interface Stat {
   get mtimeNs(): bigint;
   get ctimeNs(): bigint;
   get location(): LocationType
+  get blocks(): long;
 
   isBlockDevice(): boolean;
   isCharacterDevice(): boolean;
@@ -1871,6 +1872,7 @@ export class StatInner implements Stat {
   native get mtimeNs(): bigint;
   native get ctimeNs(): bigint;
   native get location(): LocationType
+  native get blocks(): long;
 
   private nativeStat: long = 0;
   private cleaner: Cleaner | null = null;

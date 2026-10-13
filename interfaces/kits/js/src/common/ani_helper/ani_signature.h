@@ -228,6 +228,8 @@ struct StatInner : public BaseType {
     static const string getCtimeNsSig;
     static const string getLocation;
     static const string getLocationSig;
+    static const string getBlocks;
+    static const string getBlocksSig;
 };
 
 struct StreamInner : public BaseType {

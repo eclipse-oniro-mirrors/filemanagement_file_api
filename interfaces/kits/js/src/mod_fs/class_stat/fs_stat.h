@@ -58,6 +58,7 @@ public:
     int64_t GetCtimeNs();
 #if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
     int32_t GetLocation();
+    int64_t GetBlocks();
 #endif
 
 private:

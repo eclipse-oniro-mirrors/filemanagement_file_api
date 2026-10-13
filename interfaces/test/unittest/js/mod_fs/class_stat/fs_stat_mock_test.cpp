@@ -129,4 +129,48 @@ HWTEST_F(FsStatMockTest, FsStatMockTest_GetLocation_002, testing::ext::TestSize.
     GTEST_LOG_(INFO) << "FsStatMockTes-end FsStatMockTest_GetLocation_002";
 }
 
+/**
+ * @tc.name: FsStatMockTest_GetBlocks_001
+ * @tc.desc: Test FsStat::GetBlocks returns the st_blocks snapshot as is.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(FsStatMockTest, FsStatMockTest_GetBlocks_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FsStatMockTes-begin FsStatMockTest_GetBlocks_001";
+
+    auto entity = std::make_unique<StatEntity>();
+    entity->stat_.st_size = 4096;
+    entity->stat_.st_blocks = 8; // 4096 / 512
+    FsStat fsStat(std::move(entity));
+
+    EXPECT_EQ(fsStat.GetBlocks(), 8);
+
+    fsStat.entity->fileInfo_ = nullptr;
+    GTEST_LOG_(INFO) << "FsStatMockTes-end FsStatMockTest_GetBlocks_001";
+}
+
+/**
+ * @tc.name: FsStatMockTest_GetBlocks_002
+ * @tc.desc: Test FsStat::GetBlocks returns 0 for an empty file snapshot.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(FsStatMockTest, FsStatMockTest_GetBlocks_002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FsStatMockTes-begin FsStatMockTest_GetBlocks_002";
+
+    auto entity = std::make_unique<StatEntity>();
+    entity->stat_.st_size = 0;
+    entity->stat_.st_blocks = 0;
+    FsStat fsStat(std::move(entity));
+
+    EXPECT_EQ(fsStat.GetBlocks(), 0);
+
+    fsStat.entity->fileInfo_ = nullptr;
+    GTEST_LOG_(INFO) << "FsStatMockTes-end FsStatMockTest_GetBlocks_002";
+}
+
 } // namespace OHOS::FileManagement::ModuleFileIO::Test

@@ -155,6 +155,8 @@ const string FS::StatInner::getCtimeNs = Builder::BuildGetterName("ctimeNs");
 const string FS::StatInner::getCtimeNsSig = Builder::BuildSignatureDescriptor({}, BuiltInTypes::BigInt::classType);
 const string FS::StatInner::getLocation = Builder::BuildGetterName("location");
 const string FS::StatInner::getLocationSig = Builder::BuildSignatureDescriptor({}, FS::LocationType::classType);
+const string FS::StatInner::getBlocks = Builder::BuildGetterName("blocks");
+const string FS::StatInner::getBlocksSig = Builder::BuildSignatureDescriptor({}, BasicTypes::longType);
 // FS::StreamInner
 const Type FS::StreamInner::classType = Builder::BuildClass("@ohos.file.fs.fileIo.StreamInner");
 const string FS::StreamInner::classDesc = FS::StreamInner::classType.Descriptor();

@@ -318,6 +318,17 @@ ani_enum_item StatAni::GetLocation(ani_env *env, [[maybe_unused]] ani_object obj
 
     return aniEnumLocaltion;
 }
+
+ani_long StatAni::GetBlocks(ani_env *env, [[maybe_unused]] ani_object object)
+{
+    auto fsStat = StatWrapper::Unwrap(env, object);
+    if (fsStat == nullptr) {
+        ErrorHandler::Throw(env, UNKNOWN_ERR);
+        return -1;
+    }
+
+    return fsStat->GetBlocks();
+}
 #endif
 
 } // namespace ANI

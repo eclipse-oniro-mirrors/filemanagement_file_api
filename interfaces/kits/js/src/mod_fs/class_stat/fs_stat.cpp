@@ -159,6 +159,11 @@ int32_t FsStat::GetLocation()
     defaultLocation = static_cast<Location>(atoi(location.c_str()));
     return static_cast<int32_t>(defaultLocation);
 }
+
+int64_t FsStat::GetBlocks()
+{
+    return static_cast<int64_t>(entity->stat_.st_blocks);
+}
 #endif
 
 FsStat *FsStat::Constructor()
