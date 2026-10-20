@@ -33,7 +33,7 @@ public:
     std::string GetClassName() override;
 #endif
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
     static napi_value GetPath(napi_env env, napi_callback_info info);
     static napi_value GetName(napi_env env, napi_callback_info info);
     static napi_value GetParent(napi_env env, napi_callback_info info);

@@ -20,13 +20,13 @@
 #include "fs_utils.h"
 #include "uv.h"
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 enum Location { LOCAL = 1 << 0, CLOUD = 1 << 1 };
 #endif
 namespace OHOS::FileManagement::ModuleFileIO {
 struct StatEntity {
     uv_stat_t stat_;
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
     std::shared_ptr<FileInfo> fileInfo_;
 #endif
 };

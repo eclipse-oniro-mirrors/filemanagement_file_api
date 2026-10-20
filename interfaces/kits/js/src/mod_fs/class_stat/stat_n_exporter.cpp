@@ -20,7 +20,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <memory>
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 #include <sys/xattr.h>
 #endif
 
@@ -313,7 +313,7 @@ napi_value StatNExporter::GetCtimeNs(napi_env env, napi_callback_info info)
     return NVal::CreateBigIntUint64(env, cTimeNsec).val_;
 }
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 napi_value StatNExporter::GetLocation(napi_env env, napi_callback_info info)
 {
     NFuncArg funcArg(env, info);
@@ -403,7 +403,7 @@ bool StatNExporter::Export()
         NVal::DeclareNapiGetter("atimeNs", GetAtimeNs),
         NVal::DeclareNapiGetter("mtimeNs", GetMtimeNs),
         NVal::DeclareNapiGetter("ctimeNs", GetCtimeNs),
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
         NVal::DeclareNapiGetter("location", GetLocation),
 #endif
     };

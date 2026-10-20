@@ -26,7 +26,7 @@ config("libn_public_config") {
 
 ohos_shared_library("filemgmt_libn") {
   cflags_cc = [ "-std=c++17" ]
-  if (!use_mingw_win && !use_mac) {
+  if (!use_mingw_win && !use_mac && !use_linux) {
     cflags = [
       "-fdata-sections",
       "-ffunction-sections",
@@ -62,6 +62,9 @@ ohos_shared_library("filemgmt_libn") {
   }
   if (use_mac) {
     defines = [ "IOS_PLATFORM" ]
+  }
+  if (use_linux) {
+    defines = [ "PREVIEW_LINUX" ]
   }
 
   public_configs = [ ":libn_public_config" ]

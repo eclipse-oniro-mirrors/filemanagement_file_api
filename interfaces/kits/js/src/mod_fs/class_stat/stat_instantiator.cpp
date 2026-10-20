@@ -20,7 +20,7 @@ namespace FileManagement {
 namespace ModuleFileIO {
 using namespace std;
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 FsStat* StatInstantiator::InstantiateStat(const uv_stat_t &buf, shared_ptr<FileInfo> fileInfo)
 {
     auto stat = FsStat::Constructor();

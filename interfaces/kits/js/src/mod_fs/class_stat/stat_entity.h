@@ -20,7 +20,7 @@
 
 #include "common_func.h"
 #include "uv.h"
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 enum Location {
     LOCAL = 1 << 0,
     CLOUD = 1 << 1
@@ -29,7 +29,7 @@ enum Location {
 namespace OHOS::FileManagement::ModuleFileIO {
 struct StatEntity {
     uv_stat_t stat_;
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
     std::shared_ptr<FileInfo> fileInfo_;
 #endif
 };

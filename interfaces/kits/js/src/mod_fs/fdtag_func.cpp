@@ -17,7 +17,7 @@
 #include "filemgmt_libhilog.h"
  
 #include <stdatomic.h>
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM) && !defined(PREVIEW_LINUX)
 #include <sys/mman.h>
 #endif
  
@@ -25,7 +25,7 @@ namespace OHOS {
 namespace FileManagement {
 namespace ModuleFileIO {
 using namespace std;
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM) && !defined(PREVIEW_LINUX)
 #define ALIGN_SIZE 4096
 inline size_t FS_ALIGN(size_t x, size_t y)
 {

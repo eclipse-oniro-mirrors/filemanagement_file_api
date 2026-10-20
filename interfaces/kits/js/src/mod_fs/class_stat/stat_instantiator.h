@@ -26,7 +26,7 @@ using namespace std;
 
 class StatInstantiator final {
 public:
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
     static FsStat* InstantiateStat(const uv_stat_t &buf, shared_ptr<FileInfo> fileInfo);
 #endif
     static FsStat* InstantiateStat(const uv_stat_t &buf);

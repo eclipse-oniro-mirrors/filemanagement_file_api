@@ -52,7 +52,7 @@ static tuple<bool, int32_t> IsFd(FileInfo &fileInfo)
 static tuple<bool, FileInfo> ParsePath(FileInfo &fileInfo)
 {
     auto &path = fileInfo.path;
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM) && !defined(PREVIEW_LINUX)
     std::string pathStr(path.get());
     if (pathStr.find("://") != std::string::npos) {
         Uri uri(pathStr);
@@ -138,7 +138,7 @@ FsResult<FsStat *> StatCore::DoStat(FileInfo &fileinfo)
         return FsResult<FsStat *>::Error(err);
     }
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
     auto arg = CreateSharedPtr<FileInfo>(move(info));
     if (arg == nullptr) {
         HILOGE("Failed to request heap memory.");

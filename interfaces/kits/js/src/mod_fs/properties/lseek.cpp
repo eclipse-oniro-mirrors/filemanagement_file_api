@@ -17,7 +17,20 @@
 #include "common_func.h"
 #include "file_utils.h"
 #include "filemgmt_libhilog.h"
+#if !defined(PREVIEW_LINUX)
 #include "rust_file.h"
+#else
+#include <unistd.h>
+enum SeekPos {
+    START,
+    CURRENT,
+    END
+};
+static inline long long int Lseek(int fd, long long offset, enum SeekPos pos)
+{
+    return lseek(fd, static_cast<off_t>(offset), static_cast<int>(pos));
+}
+#endif
 
 namespace OHOS {
 namespace FileManagement {

@@ -32,7 +32,7 @@
 #include "fd_guard.h"
 #include "uv.h"
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 #include "iremote_broker.h"
 #endif
 
@@ -77,7 +77,7 @@ struct FileInfo {
     unique_ptr<DistributedFS::FDGuard> fdg = { nullptr };
 };
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 class FileIoToken : public IRemoteBroker {
 public:
     DECLARE_INTERFACE_DESCRIPTOR(u"ohos.fileio.open");

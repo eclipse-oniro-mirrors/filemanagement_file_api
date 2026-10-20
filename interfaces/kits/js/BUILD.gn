@@ -161,28 +161,7 @@ ohos_shared_library("fs") {
     "${utils_path}/filemgmt_libfs/include",
   ]
 
-  sources = [
-    "src/common/file_api_debug.cpp",
-    "src/common/file_fs_trace.cpp",
-    "src/common/file_helper/fd_guard.cpp",
-    "src/mod_fs/class_file/file_n_exporter.cpp",
-    "src/mod_fs/class_stat/stat_n_exporter.cpp",
-    "src/mod_fs/common_func.cpp",
-    "src/mod_fs/fdtag_func.cpp",
-    "src/mod_fs/module.cpp",
-    "src/mod_fs/properties/close.cpp",
-    "src/mod_fs/properties/fdatasync.cpp",
-    "src/mod_fs/properties/fsync.cpp",
-    "src/mod_fs/properties/lstat.cpp",
-    "src/mod_fs/properties/mkdtemp.cpp",
-    "src/mod_fs/properties/open.cpp",
-    "src/mod_fs/properties/prop_n_exporter.cpp",
-    "src/mod_fs/properties/rename.cpp",
-    "src/mod_fs/properties/rmdirent.cpp",
-    "src/mod_fs/properties/stat.cpp",
-    "src/mod_fs/properties/truncate.cpp",
-    "src/mod_fs/properties/utimes.cpp",
-  ]
+  sources = fs_base_src
 
   cflags_cc = [ "-std=c++17" ]
 
@@ -199,6 +178,9 @@ ohos_shared_library("fs") {
   if (use_mac) {
     defines = [ "IOS_PLATFORM" ]
   }
+  if (use_linux) {
+    defines = [ "PREVIEW_LINUX" ]
+  }
 
   external_deps = [
     "hilog:libhilog",
@@ -206,7 +188,7 @@ ohos_shared_library("fs") {
     "node:node_header_notice",
   ]
 
-  if (!use_mingw_win && !use_mac) {
+  if (!use_mingw_win && !use_mac && !use_linux) {
     cflags = [
       "-fvisibility=hidden",
       "-fdata-sections",

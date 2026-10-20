@@ -28,7 +28,7 @@ namespace FileManagement {
 namespace ModuleFileIO {
 using namespace std;
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 static tuple<int, unique_ptr<uv_fs_t, decltype(FsUtils::FsReqCleanup) *>> RealPathCore(const string &srcPath)
 {
     std::unique_ptr<uv_fs_t, decltype(FsUtils::FsReqCleanup) *> realpathReq = { new (std::nothrow) uv_fs_t,
