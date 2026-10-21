@@ -17,7 +17,9 @@
 
 #include <cstring>
 #include <dirent.h>
+#ifdef __MUSL__
 #include <filesystem>
+#endif
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <tuple>
