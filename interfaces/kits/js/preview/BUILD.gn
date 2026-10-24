@@ -18,7 +18,7 @@ import("//foundation/filemanagement/file_api/file_api.gni")
 shared_library("fs") {
   output_name = "fs"
   output_dir = target_out_dir
-  output_extension = "z.so"
+  output_extension = "so"
 
   include_dirs = [
     "${src_path}/common",
@@ -72,7 +72,7 @@ generate_module_info("fs_info") {
   module_type = "lib"
   module_source_dir = target_out_dir
   module_install_name = "fs"
-  module_output_extension = ".z.so"
+  module_output_extension = ".so"
   install_enable = false
   module_label = ":fs"
 }
