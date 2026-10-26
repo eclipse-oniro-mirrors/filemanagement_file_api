@@ -283,7 +283,12 @@ static int ZipWriterOpenInitExtractStream(struct ZipWriterTaskParam *writerTask)
 
 static int ZipWriterDataDesiptorZip64LocalHeader(struct Stream *stream, struct ZipWriterEntryInfo *entry)
 {
-    entry->zip64extraInLocalHeaderPos = (uint64_t)StreamTell(stream);
+    int64_t tellPos = StreamTell(stream);
+    if (tellPos < 0) {
+        ARCHIVE_ERR("failed to get stream position, StreamTell returned: %ld\n", tellPos);
+        return (int)tellPos;
+    }
+    entry->zip64extraInLocalHeaderPos = (uint64_t)tellPos;
     struct LocalExtraDataZIP64 localExtraDataZIP64;
     localExtraDataZIP64.signature = SETV(ZIP_EXTRAFIELD_ZIP64_HEADER);
     localExtraDataZIP64.extraFieldLength = SETV(ZIP_LOCAL_EXTRAFILED_ZIP64_LENGTH);
@@ -473,6 +478,10 @@ static int ZipEntryUpdateLocalHeader(struct Stream *stream, struct ZipWriterEntr
 {
     int ret;
     int64_t currentPos = StreamTell(stream);
+    if (currentPos < 0) {
+        ARCHIVE_ERR("failed to get stream position, StreamTell returned: %ld\n", currentPos);
+        return (int)currentPos;
+    }
     int64_t crcPos = (int64_t)entry->localHeaderOffset + CRC_POS_IN_LOCAL_HEADER;
     if (inCache) {
         crcPos = CRC_POS_IN_LOCAL_HEADER;
@@ -483,7 +492,10 @@ static int ZipEntryUpdateLocalHeader(struct Stream *stream, struct ZipWriterEntr
     RETURN_IF_FAIL(ret);
     if (entry->compressedSize > UINT32_MAX || entry->uncompressedSize > UINT32_MAX) {
         if (!entry->zip64) {
-            StreamSeek(stream, currentPos, ARCHIVE_SEEK_SET);
+            ret = StreamSeek(stream, currentPos, ARCHIVE_SEEK_SET);
+            if (ret != ARCHIVE_OK) {
+                ARCHIVE_ERR("failed to restore stream position, StreamSeek returned: %d\n", ret);
+            }
             return ARCHIVE_PARAM_ERROR;
         }
     }
@@ -505,6 +517,9 @@ static int ZipEntryUpdateLocalHeader(struct Stream *stream, struct ZipWriterEntr
     }
 
     ret = StreamSeek(stream, currentPos, ARCHIVE_SEEK_SET);
+    if (ret != ARCHIVE_OK) {
+        ARCHIVE_ERR("failed to restore stream position, StreamSeek returned: %d\n", ret);
+    }
     return ret;
 }
 
@@ -533,7 +548,11 @@ static int ZipWriterCloseStream(struct ZipWriterTaskParam *writerTask, int needC
     }
 
     ret = StreamClose(writerTask->compressStream);
-    RETURN_IF_FAIL(ret);
+    if (ret != ARCHIVE_OK) {
+        // close 失败时流已被底层销毁/失效，置空防止后续 ZipWriterDeleteStream 二次 close 造成 double deflateEnd
+        StreamDestroy(&writerTask->compressStream);
+        return ret;
+    }
 
     if (needCalSize) {
         UpdateCompressedSize(writerTask);
@@ -673,15 +692,20 @@ static uint16_t ZipGetFlag(uint16_t compressionMethod, int compressLevel)
     return flag;
 }
 
-static void ZipWriterOpenInitEntryInfo(struct ZipWriterTaskParam *writerTask)
+static int ZipWriterOpenInitEntryInfo(struct ZipWriterTaskParam *writerTask)
 {
     struct ZipWriterEntryInfo *entryInfo = writerTask->entryInfo;
+    int64_t tellPos = StreamTell(writerTask->writer->baseStream);
+    if (tellPos < 0) {
+        ARCHIVE_ERR("failed to get stream position, StreamTell returned: %ld\n", tellPos);
+        return (int)tellPos;
+    }
     entryInfo->compressionMethod = (uint16_t)writerTask->archive->method;
     entryInfo->versionMadeBy = GetVersionMadeBy(writerTask->archive);
     entryInfo->dosModDateTime = GetFileModfiyTime(writerTask->fileNode->filePath);
     entryInfo->internalFa = 0;
     entryInfo->externalFa = GetFileExternalAttributes(writerTask->fileNode->filePath);
-    entryInfo->localHeaderOffset = (uint64_t)StreamTell(writerTask->writer->baseStream);
+    entryInfo->localHeaderOffset = (uint64_t)tellPos;
     entryInfo->filename = writerTask->fileNode->saveName;
     entryInfo->filenameSize = entryInfo->filename == NULL ? 0 : (uint16_t)strlen(entryInfo->filename);
     entryInfo->compressedSize = 0;
@@ -697,6 +721,7 @@ static void ZipWriterOpenInitEntryInfo(struct ZipWriterTaskParam *writerTask)
     if (IsUtf8Encoded((unsigned char *)entryInfo->filename, false)) {
         entryInfo->flag = entryInfo->flag | ZIP_FLAG_UTF8;
     }
+    return ARCHIVE_OK;
 }
 
 static int ZipWriterEntryOpen(struct ZipWriterTaskParam *writerTask)
@@ -710,13 +735,16 @@ static int ZipWriterEntryOpen(struct ZipWriterTaskParam *writerTask)
         return ARCHIVE_PARAM_ERROR;
     }
 
-    ZipWriterOpenInitEntryInfo(writerTask);
+    int ret = ZipWriterOpenInitEntryInfo(writerTask);
+    if (ret != ARCHIVE_OK) {
+        return ret;
+    }
 
     if (strlen(writerTask->entryInfo->filename) == 0 || strlen(writerTask->entryInfo->filename) > 0xffff) {
         return ARCHIVE_PARAM_ERROR;
     }
 
-    int ret = ZipWriterOpenInitExtractStream(writerTask);
+    ret = ZipWriterOpenInitExtractStream(writerTask);
     if (ret != ARCHIVE_OK) {
         return ret;
     }
@@ -1164,14 +1192,24 @@ static int ZipWriterSaveCD(struct ZipWriter *writer)
     }
     struct Stream *baseStream = writer->baseStream;
     struct Stream *cdMemStream = writer->cdMemStream;
-    writer->offsetOfCentralDir = (uint64_t)StreamTell(baseStream);
+    int64_t tellPos = StreamTell(baseStream);
+    if (tellPos < 0) {
+        ARCHIVE_ERR("failed to get stream position, StreamTell returned: %ld\n", tellPos);
+        return (int)tellPos;
+    }
+    writer->offsetOfCentralDir = (uint64_t)tellPos;
     ret = ZipWriteMemStream(baseStream, cdMemStream);
     RETURN_IF_FAIL(ret);
     writer->numberOfDiskWithCD = 0;
-    writer->sizeOfCentralDir = (uint64_t)StreamTell(baseStream) - writer->offsetOfCentralDir;
+    tellPos = StreamTell(baseStream);
+    if (tellPos < 0) {
+        ARCHIVE_ERR("failed to get stream position, StreamTell returned: %ld\n", tellPos);
+        return (int)tellPos;
+    }
+    writer->sizeOfCentralDir = (uint64_t)tellPos - writer->offsetOfCentralDir;
     if (writer->sizeOfCentralDir > UINT32_MAX || writer->offsetOfCentralDir > UINT32_MAX ||
         writer->totalNumberOfEntries > UINT16_MAX) {
-        writer->offsetOfEOCD = (uint64_t)StreamTell(baseStream);
+        writer->offsetOfEOCD = (uint64_t)tellPos;
         ret = ZipWriterZip64EndOfCD(writer, baseStream);
         RETURN_IF_FAIL(ret);
 
@@ -1197,12 +1235,18 @@ static int ZipWriterClose(HmArchiveWriteInfo *archive)
         ret = ZipWriterSaveCD(writer);
     }
     if (writer->cdMemStream) {
-        StreamClose(writer->cdMemStream);
+        int closeRet = StreamClose(writer->cdMemStream);
+        if (closeRet != ARCHIVE_OK) {
+            ret = closeRet;
+        }
         StreamDestroy(&writer->cdMemStream);
         writer->cdMemStream = NULL;
     }
     if (writer->baseStream) {
-        StreamClose(writer->baseStream);
+        int closeRet = StreamClose(writer->baseStream);
+        if (closeRet != ARCHIVE_OK) {
+            ret = closeRet;
+        }
         StreamDestroy(&writer->baseStream);
         writer->baseStream = NULL;
     }

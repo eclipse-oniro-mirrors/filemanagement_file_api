@@ -34,9 +34,9 @@ ARCHIVE_IMPL int ZipCheckSignature(struct Stream *stream, uint32_t check)
     }
 
     uint32_t sigRead;
-    size_t read = StreamRead(stream, &sigRead, ZIP_SIZE_SIGNATURE);
-    if (read != ZIP_SIZE_SIGNATURE) {
-        return ARCHIVE_INTERNAL_ERROR;
+    int64_t read = StreamRead(stream, &sigRead, ZIP_SIZE_SIGNATURE);
+    if (read < 0 || read != (int64_t)ZIP_SIZE_SIGNATURE) {
+        return read < 0 ? (int)read : ARCHIVE_INTERNAL_ERROR;
     }
 
     if (sigRead != check) {
@@ -65,9 +65,9 @@ LOCAL int ZipReadEOCD64(struct Stream *stream, struct EndOfCentralDir64 *eocd64,
     int ret = StreamSeek(stream, *offsetOfEOCD64, SEEK_SET);
     RETURN_IF_FAIL(ret);
 
-    size_t read = StreamRead(stream, eocd64, sizeof(struct EndOfCentralDir64));
-    if (read != sizeof(struct EndOfCentralDir64)) {
-        return ARCHIVE_FORMAT_ERROR;
+    int64_t read = StreamRead(stream, eocd64, sizeof(struct EndOfCentralDir64));
+    if (read < 0 || read != (int64_t)sizeof(struct EndOfCentralDir64)) {
+        return read < 0 ? (int)read : ARCHIVE_FORMAT_ERROR;
     }
 
     if (GETV(eocd64->signature) != ZIP_MAGIC_ENDHEADER64) {
@@ -165,10 +165,10 @@ ARCHIVE_IMPL int ZipSearchEOCD(struct Stream *stream, struct EndOfCentralDir *eo
         return ret;
     }
 
-    size_t read = StreamRead(stream, buffer, maxRead);
-    if ((int64_t)read != maxRead) {
+    int64_t read = StreamRead(stream, buffer, maxRead);
+    if (read != maxRead) {
         free(buffer);
-        return ARCHIVE_INTERNAL_ERROR;
+        return read < 0 ? (int)read : ARCHIVE_INTERNAL_ERROR;
     }
 
     ret = ZipSearchEOCDFromback(stream, buffer, maxRead, eocd, offsetOfEOCD, eocd64, offsetOfEOCD64, isZip64, fileSize);
@@ -297,7 +297,7 @@ ARCHIVE_IMPL int ZipReadExtraFieldBuffer(struct Stream *stream, size_t extraFiel
     uint16_t extraFieldLength)
 {
     int ret;
-    size_t read;
+    int64_t read;
     if (extraField == NULL) {
         return ARCHIVE_INTERNAL_ERROR;
     }
@@ -310,8 +310,8 @@ ARCHIVE_IMPL int ZipReadExtraFieldBuffer(struct Stream *stream, size_t extraFiel
     RETURN_IF_FAIL(ret);
 
     read = StreamRead(stream, extraField, extraFieldLength);
-    if (read != extraFieldLength) {
-        return ARCHIVE_READ_ERROR;
+    if (read < 0 || read != (int64_t)extraFieldLength) {
+        return read < 0 ? (int)read : ARCHIVE_READ_ERROR;
     }
 
     return ARCHIVE_OK;
@@ -325,13 +325,13 @@ ARCHIVE_IMPL int ZipReadCentralDirHeader(struct Stream *stream, uint64_t positio
     }
 
     int ret;
-    size_t read;
+    int64_t read;
     uint32_t signature;
     ret = StreamSeek(stream, position, ARCHIVE_SEEK_SET);
     RETURN_IF_FAIL(ret);
     read = StreamRead(stream, &signature, sizeof(signature));
-    if (read != sizeof(signature)) {
-        return ARCHIVE_FORMAT_ERROR;
+    if (read < 0 || read != (int64_t)sizeof(signature)) {
+        return read < 0 ? (int)read : ARCHIVE_FORMAT_ERROR;
     }
 
     if (signature != ZIP_MAGIC_CENTRALHEADER) {
@@ -341,8 +341,8 @@ ARCHIVE_IMPL int ZipReadCentralDirHeader(struct Stream *stream, uint64_t positio
         return ARCHIVE_FORMAT_ERROR;
     }
     read = StreamRead(stream, centralDirHeader, sizeof(*centralDirHeader));
-    if (read != sizeof(*centralDirHeader)) {
-        return ARCHIVE_FORMAT_ERROR;
+    if (read < 0 || read != (int64_t)sizeof(*centralDirHeader)) {
+        return read < 0 ? (int)read : ARCHIVE_FORMAT_ERROR;
     }
 
     return ARCHIVE_OK;
