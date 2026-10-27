@@ -23,7 +23,7 @@ using namespace OHOS::FileManagement::LibN;
 
 const uint64_t SECOND_TO_NANOSECOND = 1e9;
 constexpr int S_PERMISSION = 00000777;
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 const size_t MAX_ATTR_NAME = 64;
 const std::string CLOUD_LOCATION_ATTR = "user.cloud.location";
 #endif
@@ -60,7 +60,7 @@ public:
     static napi_value GetAtimeNs(napi_env env, napi_callback_info info);
     static napi_value GetMtimeNs(napi_env env, napi_callback_info info);
     static napi_value GetCtimeNs(napi_env env, napi_callback_info info);
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
     static napi_value GetLocation(napi_env env, napi_callback_info info);
 #endif
 

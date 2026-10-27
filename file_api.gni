@@ -18,6 +18,31 @@ utils_path = "${file_api_path}/utils"
 use_mac = "${current_os}_${current_cpu}" == "mac_x64" ||
           "${current_os}_${current_cpu}" == "mac_arm64"
 use_mingw_win = "${current_os}_${current_cpu}" == "mingw_x86_64"
+use_linux = "${current_os}_${current_cpu}" == "linux_x64" ||
+            "${current_os}_${current_cpu}" == "linux_arm64"
+
+fs_base_src = [
+  "${src_path}/common/file_api_debug.cpp",
+  "${src_path}/common/file_fs_trace.cpp",
+  "${src_path}/common/file_helper/fd_guard.cpp",
+  "${src_path}/mod_fs/class_file/file_n_exporter.cpp",
+  "${src_path}/mod_fs/class_stat/stat_n_exporter.cpp",
+  "${src_path}/mod_fs/common_func.cpp",
+  "${src_path}/mod_fs/fdtag_func.cpp",
+  "${src_path}/mod_fs/module.cpp",
+  "${src_path}/mod_fs/properties/close.cpp",
+  "${src_path}/mod_fs/properties/fdatasync.cpp",
+  "${src_path}/mod_fs/properties/fsync.cpp",
+  "${src_path}/mod_fs/properties/lstat.cpp",
+  "${src_path}/mod_fs/properties/mkdtemp.cpp",
+  "${src_path}/mod_fs/properties/open.cpp",
+  "${src_path}/mod_fs/properties/prop_n_exporter.cpp",
+  "${src_path}/mod_fs/properties/rename.cpp",
+  "${src_path}/mod_fs/properties/rmdirent.cpp",
+  "${src_path}/mod_fs/properties/stat.cpp",
+  "${src_path}/mod_fs/properties/truncate.cpp",
+  "${src_path}/mod_fs/properties/utimes.cpp",
+]
 
 declare_args() {
   file_api_read_optimize = false

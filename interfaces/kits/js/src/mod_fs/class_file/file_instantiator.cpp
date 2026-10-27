@@ -75,7 +75,7 @@ FsResult<FsFile *> FileInstantiator::InstantiateFile(int fd, string pathOrUri, b
         fileEntity->path_ = pathOrUri;
         fileEntity->uri_ = "";
     }
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM) && !defined(PREVIEW_LINUX)
     FdTagFunc::SetFdTag(fd, reinterpret_cast<uintptr_t>(fileEntity));
 #endif
     return result;

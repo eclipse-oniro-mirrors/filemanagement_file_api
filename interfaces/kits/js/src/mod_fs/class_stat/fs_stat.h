@@ -24,7 +24,7 @@ using namespace std;
 
 const int64_t SECOND_TO_NANOSECOND = 1e9;
 constexpr int S_PERMISSION = 00000777;
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 const size_t MAX_ATTR_NAME = 64;
 const std::string CLOUD_LOCATION_ATTR = "user.cloud.location";
 #endif
@@ -56,7 +56,7 @@ public:
     int64_t GetAtimeNs();
     int64_t GetMtimeNs();
     int64_t GetCtimeNs();
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
     int32_t GetLocation();
 #endif
 

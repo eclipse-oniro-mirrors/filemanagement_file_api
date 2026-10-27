@@ -45,7 +45,7 @@ struct FdSanTable {
 };
  
 struct FdTagFunc {
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM) && !defined(PREVIEW_LINUX)
     static uint64_t GetFdTag(int fd);
     static void SetFdTag(int fd, uint64_t tag);
 #endif

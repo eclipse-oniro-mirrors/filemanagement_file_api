@@ -67,7 +67,7 @@ napi_value FdopenStream::Sync(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM) && !defined(PREVIEW_LINUX)
     CommonFunc::SetFdTag(fd, 0);
 #endif
 
@@ -103,7 +103,7 @@ napi_value FdopenStream::Async(napi_env env, napi_callback_info info)
             return NError(errno);
         }
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM) && !defined(PREVIEW_LINUX)
         CommonFunc::SetFdTag(fd, 0);
 #endif
 

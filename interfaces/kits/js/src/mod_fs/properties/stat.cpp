@@ -33,7 +33,7 @@ const std::string SCHEME_FILE = "file";
 
 static tuple<bool, FileInfo> ParseJsFileByPath(napi_env env, std::unique_ptr<char[]> path)
 {
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM) && !defined(PREVIEW_LINUX)
     string pathStr(path.get());
     if (pathStr.find("://") != string::npos) {
         Uri uri(pathStr);
@@ -129,7 +129,7 @@ napi_value Stat::Sync(napi_env env, napi_callback_info info)
         err.ThrowErr(env);
         return nullptr;
     }
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
     auto arg = CreateSharedPtr<FileInfo>(move(fileInfo));
     if (arg == nullptr) {
         HILOGE("Failed to request heap memory.");
@@ -173,7 +173,7 @@ napi_value Stat::Async(napi_env env, napi_callback_info info)
             return err;
         }
         arg->stat_ = stat_req->statbuf;
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
         arg->fileInfo_ = fileInfo;
 #endif
         return NError(ERRNO_NOERR);
@@ -182,7 +182,7 @@ napi_value Stat::Async(napi_env env, napi_callback_info info)
         if (err) {
             return { env, err.GetNapiErr(env) };
         }
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
         return CommonFunc::InstantiateStat(env, arg->stat_, arg->fileInfo_, true);
 #else
         return CommonFunc::InstantiateStat(env, arg->stat_, true);

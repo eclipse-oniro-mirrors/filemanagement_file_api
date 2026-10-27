@@ -18,6 +18,7 @@
 
 #include <cinttypes>
 #include <iostream>
+#include <memory>
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <unistd.h>

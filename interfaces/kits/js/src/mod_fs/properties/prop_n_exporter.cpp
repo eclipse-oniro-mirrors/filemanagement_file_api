@@ -43,7 +43,7 @@
 #include "truncate.h"
 #include "utimes.h"
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 #include <sys/xattr.h>
 
 #include "bundle_mgr_proxy.h"
@@ -83,7 +83,7 @@ namespace FileManagement {
 namespace ModuleFileIO {
 using namespace std;
 using namespace OHOS::FileManagement::LibN;
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 const string CLOUDDISK_FILE_PREFIX = "/data/storage/el2/cloud";
 const string DISTRIBUTED_FILE_PREFIX = "/data/storage/el2/distributedfiles";
 const string PACKAGE_NAME_FLAG = "<PackageName>";
@@ -118,7 +118,7 @@ static int UvAccess(const string &path, int mode)
     return uv_fs_access(nullptr, access_req.get(), path.c_str(), mode, nullptr);
 }
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 static bool IsCloudOrDistributedFilePath(const string &path)
 {
     return path.find(CLOUDDISK_FILE_PREFIX) == 0 || path.find(DISTRIBUTED_FILE_PREFIX) == 0;
@@ -203,7 +203,7 @@ static int AccessCore(const string &path, int mode, int flag = DEFAULT_FLAG)
     if (FileApiDebug::isLogEnabled) {
         HILOGD("Path is %{private}s, mode is %{public}d", path.c_str(), mode);
     }
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
     if (flag == LOCAL_FLAG && IsCloudOrDistributedFilePath(path)) {
         return HandleLocalCheck(path, mode);
     }
@@ -437,7 +437,7 @@ static int MkdirCore(const string &path)
 
 static NError MkdirExec(const string &path, bool recursion, bool hasOption)
 {
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
     if (hasOption) {
         int ret = AccessCore(path, 0);
         if (ret == ERRNO_NOERR) {
@@ -484,7 +484,7 @@ napi_value PropNExporter::Mkdir(napi_env env, napi_callback_info info)
     }
     bool recursion = false;
     bool hasOption = false;
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
     if (funcArg.GetArgc() >= NARG_CNT::TWO) {
         NVal option(env, funcArg[NARG_POS::SECOND]);
         if (!option.TypeIs(napi_function)) {
@@ -538,7 +538,7 @@ napi_value PropNExporter::MkdirSync(napi_env env, napi_callback_info info)
     }
     bool hasOption = false;
     bool recursion = false;
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
     if (funcArg.GetArgc() == NARG_CNT::TWO) {
         tie(hasOption, recursion) = NVal(env, funcArg[NARG_POS::SECOND]).ToBool(false);
         if (!hasOption) {
@@ -840,7 +840,7 @@ bool PropNExporter::ExportSync()
         NVal::DeclareNapiFunction("unlinkSync", UnlinkSync),
         NVal::DeclareNapiFunction("utimes", Utimes::Sync),
         NVal::DeclareNapiFunction("writeSync", WriteSync),
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
         NVal::DeclareNapiFunction("copyDirSync", CopyDir::Sync),
         NVal::DeclareNapiFunction("copyFileSync", CopyFile::Sync),
         NVal::DeclareNapiFunction("createRandomAccessFileSync", CreateRandomAccessFile::Sync),
@@ -884,7 +884,7 @@ bool PropNExporter::ExportAsync()
         NVal::DeclareNapiFunction("read", Read),
         NVal::DeclareNapiFunction("write", Write),
         NVal::DeclareNapiFunction("unlink", Unlink),
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
         NVal::DeclareNapiFunction("copyDir", CopyDir::Async),
         NVal::DeclareNapiFunction("copyFile", CopyFile::Async),
         NVal::DeclareNapiFunction("copy", Copy::Async),
@@ -925,4 +925,4 @@ PropNExporter::PropNExporter(napi_env env, napi_value exports) : NExporter(env, 
 PropNExporter::~PropNExporter() {}
 } // namespace ModuleFileIO
 } // namespace FileManagement
-} // namespace OHOS
+} // namespace OHOS

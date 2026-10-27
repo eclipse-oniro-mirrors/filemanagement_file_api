@@ -15,6 +15,8 @@
 
 #include "n_val.h"
 
+#include <cstring>
+#include <limits>
 #include <string>
 
 #include "file_utils.h"

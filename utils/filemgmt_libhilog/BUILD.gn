@@ -21,7 +21,7 @@ config("log_public_config") {
 }
 
 ohos_shared_library("filemgmt_libhilog") {
-  if (!use_mingw_win && !use_mac) {
+  if (!use_mingw_win && !use_mac && !use_linux) {
     cflags = [
       "-fvisibility=hidden",
       "-fdata-sections",

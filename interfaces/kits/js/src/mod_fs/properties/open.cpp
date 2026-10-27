@@ -26,7 +26,7 @@
 #include "filemgmt_libhilog.h"
 #include "file_utils.h"
 #include "file_fs_trace.h"
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 #include "ability.h"
 #include "ability_manager_client.h"
 #include "bundle_info.h"
@@ -50,7 +50,7 @@ namespace FileManagement {
 namespace ModuleFileIO {
 using namespace std;
 using namespace OHOS::FileManagement::LibN;
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 using namespace OHOS::DistributedFS::ModuleRemoteUri;
 using namespace OHOS::AppExecFwk;
 #endif
@@ -65,7 +65,7 @@ const std::string MEDIA = "media";
 const std::string DOCS = "docs";
 const std::string DATASHARE = "datashare";
 const std::string SCHEME_BROKER = "content";
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 constexpr uint32_t MAX_WANT_FLAG = 4;
 #endif
 
@@ -133,7 +133,7 @@ static NVal InstantiateFile(napi_env env, int fd, string pathOrUri, bool isUri, 
         fileEntity->path_ = pathOrUri;
         fileEntity->uri_ = "";
     }
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM) && !defined(PREVIEW_LINUX)
     CommonFunc::SetFdTag(fd, static_cast<uint64_t>(reinterpret_cast<std::uintptr_t>(fileEntity)));
 #endif
     return { env, objFile };
@@ -152,7 +152,7 @@ static int OpenFileByPath(const string &path, unsigned int mode)
     return ret;
 }
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 
 static int OpenFileByDatashareHasUserId(const string &path, unsigned int flags, const string &userId)
 {
@@ -289,7 +289,7 @@ napi_value Open::Sync(napi_env env, napi_callback_info info)
         return nullptr;
     }
     string pathStr(path.get());
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
     if (pathStr.find("://") != string::npos) {
         auto [res, uriStr] = OpenFileByUri(pathStr, mode);
         if (res < 0) {
@@ -319,7 +319,7 @@ struct AsyncOpenFileArg {
 static NError AsyncCbExec(shared_ptr<AsyncOpenFileArg> arg, const string &path, unsigned int mode)
 {
     string pathStr(path);
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
     if (pathStr.find("://") != string::npos) {
         auto [res, uriStr] = OpenFileByUri(pathStr, mode);
         if (res < 0) {

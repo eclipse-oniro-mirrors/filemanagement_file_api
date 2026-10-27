@@ -19,7 +19,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <memory>
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 #include <sys/xattr.h>
 #endif
 
@@ -128,7 +128,7 @@ int64_t FsStat::GetCtimeNs()
     return static_cast<uint64_t>(entity->stat_.st_ctim.tv_sec * SECOND_TO_NANOSECOND + entity->stat_.st_ctim.tv_nsec);
 }
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 int32_t FsStat::GetLocation()
 {
     std::unique_ptr<char[]> value = CreateUniquePtr<char[]>(MAX_ATTR_NAME);

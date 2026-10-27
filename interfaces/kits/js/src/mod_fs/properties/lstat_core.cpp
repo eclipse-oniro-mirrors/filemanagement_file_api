@@ -31,7 +31,7 @@ const std::string SCHEME_FILE = "file";
 
 static string ParsePath(const string &pathStr)
 {
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM) && !defined(PREVIEW_LINUX)
     if (pathStr.find("://") != string::npos) {
         Uri uri(pathStr);
         string uriType = uri.GetScheme();
@@ -60,7 +60,7 @@ FsResult<FsStat *> LstatCore::DoLstat(const string &path)
         return FsResult<FsStat *>::Error(ret);
     }
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
     size_t length = pathStr.length() + 1;
     auto chars = std::make_unique<char[]>(length);
     ret = strncpy_s(chars.get(), length, pathStr.c_str(), pathStr.length());

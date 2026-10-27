@@ -52,7 +52,7 @@ public:
 
     ~FsFile() = default;
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
     FsResult<string> GetPath() const;
     FsResult<string> GetName() const;
     FsResult<string> GetParent() const;

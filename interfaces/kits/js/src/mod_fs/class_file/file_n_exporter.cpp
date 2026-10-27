@@ -31,7 +31,7 @@
 #include "filemgmt_libhilog.h"
 #include "filemgmt_libn.h"
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 #include "file_uri.h"
 #endif
 
@@ -73,7 +73,7 @@ napi_value FileNExporter::GetFD(napi_env env, napi_callback_info info)
     return NVal::CreateInt32(env, rafEntity->fd_.get()->GetFD()).val_;
 }
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 static tuple<int, unique_ptr<uv_fs_t, decltype(CommonFunc::fs_req_cleanup)*>> RealPathCore(const string &srcPath)
 {
     std::unique_ptr<uv_fs_t, decltype(CommonFunc::fs_req_cleanup)*> realpath_req = {
@@ -355,7 +355,7 @@ bool FileNExporter::Export()
 {
     vector<napi_property_descriptor> props = {
         NVal::DeclareNapiGetter("fd", GetFD),
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
         NVal::DeclareNapiGetter("path", GetPath),
         NVal::DeclareNapiGetter("name", GetName),
         NVal::DeclareNapiFunction("lock", Lock),

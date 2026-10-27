@@ -19,7 +19,7 @@
 #include "fd_guard.h"
 #include "n_val.h"
 #include "uv.h"
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM) && !defined(PREVIEW_LINUX)
 #include "iremote_broker.h"
 #include "file_uri.h"
 #endif
@@ -89,7 +89,7 @@ struct FileInfo {
     std::unique_ptr<DistributedFS::FDGuard> fdg = { nullptr };
 };
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM) && !defined(PREVIEW_LINUX)
 class FileIoToken : public IRemoteBroker {
 public:
     DECLARE_INTERFACE_DESCRIPTOR(u"ohos.fileio.open");
@@ -109,7 +109,7 @@ void InitWhenceType(napi_env env, napi_value exports);
 struct CommonFunc {
     static unsigned int ConvertJsFlags(unsigned int &flags);
     static LibN::NVal InstantiateStat(napi_env env, const uv_stat_t &buf, bool async = false);
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
     static LibN::NVal InstantiateStat(napi_env env, const uv_stat_t &buf, std::shared_ptr<FileInfo> fileInfo,
                                       bool async = false);
 #endif
@@ -128,7 +128,7 @@ struct CommonFunc {
                                                                                              napi_value dstPath);
     static void fs_req_cleanup(uv_fs_t* req);
     static std::string GetModeFromFlags(unsigned int flags);
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM) && !defined(PREVIEW_LINUX)
     static uint64_t GetFdTag(int fd);
     static void SetFdTag(int fd, uint64_t tag);
     static bool GetAndCheckUserId(Uri* uri, std::string &userId);
@@ -139,4 +139,4 @@ struct CommonFunc {
 } // namespace ModuleFileIO
 } // namespace FileManagement
 } // namespace OHOS
-#endif // INTERFACES_KITS_JS_SRC_MOD_FS_COMMON_FUNC_H
+#endif // INTERFACES_KITS_JS_SRC_MOD_FS_COMMON_FUNC_H

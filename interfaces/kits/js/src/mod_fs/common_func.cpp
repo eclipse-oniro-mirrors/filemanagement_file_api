@@ -35,7 +35,7 @@
 #include "filemgmt_libhilog.h"
 #include "filemgmt_libn.h"
 #include "file_utils.h"
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM) && !defined(PREVIEW_LINUX)
 #include <sys/mman.h>
 #include <stdatomic.h>
 
@@ -51,7 +51,7 @@ namespace FileManagement {
 namespace ModuleFileIO {
 using namespace std;
 using namespace OHOS::FileManagement::LibN;
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM) && !defined(PREVIEW_LINUX)
 const uint32_t API_VERSION_MOD = 1000;
 #define ALIGN_SIZE 4096
 #define FS_ALIGN(x, y) (((x) + (y) - 1) & -(y))
@@ -260,7 +260,7 @@ unsigned int CommonFunc::ConvertJsFlags(unsigned int &flags)
     return flagsABI;
 }
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 NVal CommonFunc::InstantiateStat(napi_env env, const uv_stat_t &buf, shared_ptr<FileInfo> fileInfo, bool async)
 {
     napi_value objStat = NClass::InstantiateClass(env, StatNExporter::className_, {});
@@ -349,7 +349,7 @@ NVal CommonFunc::InstantiateFile(napi_env env, int fd, const string &pathOrUri, 
         fileEntity->uri_ = "";
     }
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM) && !defined(PREVIEW_LINUX)
     int64_t tag = reinterpret_cast<uint64_t>(fileEntity);
     SetFdTag(fd, tag);
 #endif
@@ -407,7 +407,7 @@ string CommonFunc::GetModeFromFlags(unsigned int flags)
     return mode;
 }
 
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM) && !defined(PREVIEW_LINUX)
 static struct FdSanTable g_fdTable = {
     .overflow = nullptr,
 };
@@ -716,4 +716,4 @@ tuple<bool, unique_ptr<char[]>, void *, size_t, int64_t> CommonFunc::GetWriteArg
 }
 } // namespace ModuleFileIO
 } // namespace FileManagement
-} // namespace OHOS
+} // namespace OHOS

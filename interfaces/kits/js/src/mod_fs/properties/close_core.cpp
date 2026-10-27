@@ -48,7 +48,7 @@ static int32_t CloseFd(int fd)
 static int32_t CloseFdWithFdsan(const int fd, const bool isFd, const uint64_t fileTag)
 {
     FileFsTrace traceCloseFd("CloseFd");
-#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM)
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM) && !defined(PREVIEW_LINUX)
     if (fd >= OVERFLOW_END) {
         return CloseFd(fd);
     }
