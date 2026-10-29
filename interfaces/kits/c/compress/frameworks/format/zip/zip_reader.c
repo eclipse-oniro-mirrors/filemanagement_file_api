@@ -361,9 +361,9 @@ LOCAL int ZipReaderGoToCentralDirHeader(struct ZipReader *reader, uint64_t offse
     uint16_t fileNameLen = GETV(reader->context.centralDirHeader.fileNameLength) < ZIP_FILE_NAME_LEN_MAX
                                 ? GETV(reader->context.centralDirHeader.fileNameLength)
                                 : ZIP_FILE_NAME_LEN_MAX;
-    size_t read = StreamRead(reader->resource.baseStream, reader->context.entryInfo.entryName, fileNameLen);
-    if (read != fileNameLen) {
-        return ARCHIVE_READ_ERROR;
+    int64_t read = StreamRead(reader->resource.baseStream, reader->context.entryInfo.entryName, fileNameLen);
+    if (read < 0 || read != (int64_t)fileNameLen) {
+        return read < 0 ? (int)read : ARCHIVE_READ_ERROR;
     }
     reader->context.entryInfo.entryName[fileNameLen] = '\0';
     void *extraField = malloc(GETV(reader->context.centralDirHeader.extraFieldLength));
@@ -545,9 +545,9 @@ LOCAL int ZipReaderProcessLocalHeader(struct ZipReaderExtractContext *context, s
         return ARCHIVE_FORMAT_ERROR;
     }
 
-    size_t read = StreamRead(resource->baseStream, &context->localFileHeader, sizeof(struct LocalFileHeader));
-    if (read != sizeof(struct LocalFileHeader)) {
-        return ARCHIVE_READ_ERROR;
+    int64_t read = StreamRead(resource->baseStream, &context->localFileHeader, sizeof(struct LocalFileHeader));
+    if (read < 0 || read != (int64_t)sizeof(struct LocalFileHeader)) {
+        return read < 0 ? (int)read : ARCHIVE_READ_ERROR;
     }
 
     // Skip reading the filenmae and extra filed ,and read them later when needed
@@ -561,21 +561,28 @@ LOCAL int ZipReaderProcessLocalHeader(struct ZipReaderExtractContext *context, s
 
 LOCAL int ZipReaderCloseEntry(struct ZipReaderExtractContext *context, struct ReadResource *resource)
 {
+    int ret = ARCHIVE_OK;
     if (resource->compressStream != NULL) {
-        StreamClose(resource->compressStream);
+        int closeRet = StreamClose(resource->compressStream);
+        if (closeRet != ARCHIVE_OK) {
+            ret = closeRet;
+        }
         StreamDestroy(&resource->compressStream);
         resource->compressStream = NULL;
     }
 
     if (resource->extractStream != NULL) {
-        StreamClose(resource->extractStream);
+        int closeRet = StreamClose(resource->extractStream);
+        if (closeRet != ARCHIVE_OK) {
+            ret = closeRet;
+        }
         StreamDestroy(&resource->extractStream);
         resource->extractStream = NULL;
     }
 
     context->entryOpened = false;
 
-    return ARCHIVE_OK;
+    return ret;
 }
 
 LOCAL bool ZipReaderEntryIsSymlink(struct ReadCentralDirHeader *centralDirHeader)
@@ -796,7 +803,10 @@ LOCAL int  ZipReaderSaveFile(struct ZipReaderExtractContext *context, struct Rea
     } while (read > 0);
     ZipReaderUpdateProgress(context, resource, true);
     ret = ZipReaderVerifyEntryCrc(context, resource);
-    ZipReaderCloseEntry(context, resource);
+    int closeRet = ZipReaderCloseEntry(context, resource);
+    if (closeRet != ARCHIVE_OK) {
+        ret = closeRet;
+    }
     return ret;
 }
 
@@ -825,7 +835,10 @@ LOCAL int ZipReaderCreateSymlink(struct ZipReaderExtractContext *context, struct
         return ARCHIVE_SYMLINK_ERROR;
     }
     ret = CreateSymlink((const char *)resource->buffer, newFilePath);
-    ZipReaderCloseEntry(context, resource);
+    int closeRet = ZipReaderCloseEntry(context, resource);
+    if (closeRet != ARCHIVE_OK) {
+        ret = closeRet;
+    }
     return ret;
 }
 
@@ -931,14 +944,15 @@ LOCAL int ZipReaderClose(HmArchiveReadInfo *archive)
         return ARCHIVE_INTERNAL_ERROR;
     }
 
+    int ret = ARCHIVE_OK;
     if (reader->resource.baseStream != NULL) {
-        StreamClose(reader->resource.baseStream);
+        ret = StreamClose(reader->resource.baseStream);
         StreamDestroy(&reader->resource.baseStream);
         reader->resource.baseStream = NULL;
     }
     ZipReaderDestroy(&reader);
 
-    return ARCHIVE_OK;
+    return ret;
 }
 
 const FmtReaderOps g_ZipReaderFmtOps = {
