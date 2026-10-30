@@ -797,7 +797,7 @@ int32_t FfiOHOSFileFsWatcherStart(int64_t id)
     if (startCode != SUCCESS_CODE) {
         return startCode;
     }
-    FileWatcherManager::GetInstance().GetNotifyEvent(instance->data_);
+    FileWatcherManager::GetInstance().GetNotifyEvent();
     return SUCCESS_CODE;
 }
 
