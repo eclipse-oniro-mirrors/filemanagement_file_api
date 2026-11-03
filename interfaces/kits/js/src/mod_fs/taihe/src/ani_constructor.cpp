@@ -200,11 +200,11 @@ static ani_status BindStatClassMethods(ani_env *env)
             reinterpret_cast<void *>(StatAni::GetMtimeNs) },
         ani_native_function { FS::StatInner::getCtimeNs.c_str(), FS::StatInner::getCtimeNsSig.c_str(),
             reinterpret_cast<void *>(StatAni::GetCtimeNs) },
+        ani_native_function { FS::StatInner::getBlocks.c_str(), FS::StatInner::getBlocksSig.c_str(),
+            reinterpret_cast<void *>(StatAni::GetBlocks) },
 #if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
         ani_native_function { FS::StatInner::getLocation.c_str(), FS::StatInner::getLocationSig.c_str(),
             reinterpret_cast<void *>(StatAni::GetLocation) },
-        ani_native_function { FS::StatInner::getBlocks.c_str(), FS::StatInner::getBlocksSig.c_str(),
-            reinterpret_cast<void *>(StatAni::GetBlocks) },
 #endif
     };
 
