@@ -60,9 +60,9 @@ public:
     static napi_value GetAtimeNs(napi_env env, napi_callback_info info);
     static napi_value GetMtimeNs(napi_env env, napi_callback_info info);
     static napi_value GetCtimeNs(napi_env env, napi_callback_info info);
+    static napi_value GetBlocks(napi_env env, napi_callback_info info);
 #if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
     static napi_value GetLocation(napi_env env, napi_callback_info info);
-    static napi_value GetBlocks(napi_env env, napi_callback_info info);
 #endif
 
     StatNExporter(napi_env env, napi_value exports);

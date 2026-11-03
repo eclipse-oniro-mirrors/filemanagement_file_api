@@ -128,6 +128,11 @@ int64_t FsStat::GetCtimeNs()
     return static_cast<uint64_t>(entity->stat_.st_ctim.tv_sec * SECOND_TO_NANOSECOND + entity->stat_.st_ctim.tv_nsec);
 }
 
+int64_t FsStat::GetBlocks()
+{
+    return static_cast<int64_t>(entity->stat_.st_blocks);
+}
+
 #if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 int32_t FsStat::GetLocation()
 {
@@ -158,11 +163,6 @@ int32_t FsStat::GetLocation()
     }
     defaultLocation = static_cast<Location>(atoi(location.c_str()));
     return static_cast<int32_t>(defaultLocation);
-}
-
-int64_t FsStat::GetBlocks()
-{
-    return static_cast<int64_t>(entity->stat_.st_blocks);
 }
 #endif
 
