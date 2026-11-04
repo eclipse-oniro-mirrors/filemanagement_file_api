@@ -413,7 +413,6 @@ int CopyImpl::CopyFile(const std::string &src, const std::string &dest, std::sha
         LOGE("Failed to request heap memory.");
         close(srcFd);
         close(destFd);
-
         return ENOMEM;
     }
     return SendFileCore(move(srcFdg), move(destFdg), infos);
