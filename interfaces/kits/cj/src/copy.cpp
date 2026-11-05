@@ -404,22 +404,15 @@ int CopyImpl::CopyFile(const std::string &src, const std::string &dest, std::sha
     auto destFd = open(dest.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
     if (destFd < 0) {
         LOGE("Error opening dest file descriptor. errno = %{public}d", errno);
-        fdsan_exchange_owner_tag(srcFd, 0, CJ_FILE_FDSAN_TAG);
-        fdsan_close_with_tag(srcFd, CJ_FILE_FDSAN_TAG);
+        close(srcFd);
         return errno;
     }
     auto srcFdg = FileFs::CreateUniquePtr<DistributedFS::FDGuard>(srcFd, true);
     auto destFdg = FileFs::CreateUniquePtr<DistributedFS::FDGuard>(destFd, true);
     if (srcFdg == nullptr || destFdg == nullptr) {
         LOGE("Failed to request heap memory.");
-        if (srcFdg == nullptr) {
-            fdsan_exchange_owner_tag(srcFd, 0, CJ_FILE_FDSAN_TAG);
-            fdsan_close_with_tag(srcFd, CJ_FILE_FDSAN_TAG);
-        }
-        if (destFdg == nullptr) {
-            fdsan_exchange_owner_tag(destFd, 0, CJ_FILE_FDSAN_TAG);
-            fdsan_close_with_tag(destFd, CJ_FILE_FDSAN_TAG);
-        }
+        close(srcFd);
+        close(destFd);
         return ENOMEM;
     }
     return SendFileCore(move(srcFdg), move(destFdg), infos);
@@ -650,7 +643,8 @@ int64_t CopyImpl::SubscribeLocalListener(std::shared_ptr<FileInfos>& infos, std:
     infos->eventFd = eventfd(0, EFD_CLOEXEC);
     if (infos->eventFd < 0) {
         LOGE("Failed to init eventFd, errno:%{public}d", errno);
-        fdsan_close_with_tag(infos->notifyFd, CJ_FILE_FDSAN_TAG);
+        fdsan_exchange_owner_tag(infos->notifyFd, CJ_FILE_FDSAN_TAG, 0);
+        close(infos->notifyFd);
         infos->notifyFd = -1;
         return errno;
     }

@@ -17,7 +17,6 @@
 #include "stat_impl.h"
 #include "macro.h"
 #include "n_error.h"
-#include "uni_error.h"
 
 #include <cstring>
 #include <fcntl.h>
@@ -149,8 +148,7 @@ static int OpenCore(FileInfo& fileInfo, const int flags, const int mode)
     fileInfo.fdg = CreateUniquePtr<DistributedFS::FDGuard>(ret, true);
     if (fileInfo.fdg == nullptr) {
         LOGE("Failed to request heap memory.");
-        fdsan_exchange_owner_tag(ret, 0, FileFs::CJ_FILE_FDSAN_TAG);
-        fdsan_close_with_tag(ret, FileFs::CJ_FILE_FDSAN_TAG);
+        close(ret);
         return 1;
     }
     return 0;
