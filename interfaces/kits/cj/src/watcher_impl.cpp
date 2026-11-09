@@ -61,7 +61,14 @@ bool FileWatcherManager::InitNotify()
     fdsan_exchange_owner_tag(notifyFd_, 0, CJ_FILE_FDSAN_TAG);
     eventFd_ = eventfd(0, EFD_CLOEXEC);
     if (eventFd_ < 0) {
-        LOGE("Failed to init eventfd errCode:%{public}d", errno);
+        int32_t errCode = errno;
+        LOGE("Failed to init eventfd errCode:%{public}d", errCode);
+        int32_t closeRet = fdsan_close_with_tag(notifyFd_, CJ_FILE_FDSAN_TAG);
+        if (closeRet != 0) {
+            LOGE("Failed to close notifyFd errCode:%{public}d", closeRet);
+        }
+        notifyFd_ = -1;
+        errno = errCode;
         return false;
     }
     fdsan_exchange_owner_tag(eventFd_, 0, CJ_FILE_FDSAN_TAG);
