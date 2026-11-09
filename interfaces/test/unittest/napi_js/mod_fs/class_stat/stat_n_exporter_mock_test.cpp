@@ -519,4 +519,67 @@ HWTEST_F(StatNExporter, StatNExporter_IsSymbolicLink_002, testing::ext::TestSize
 
     GTEST_LOG_(INFO) << "StatNExporter-end StatNExporter_IsSymbolicLink_002";
 }
+
+/**
+ * @tc.name: StatNExporter_Blocks_001
+ * @tc.desc: Test function of StatNExporter::GetBlocks interface for SUCCESS when the file system is supported.
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StatNExporter, StatNExporter_Blocks_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StatNExporter-begin StatNExporter_Blocks_001";
+
+    napi_env env = reinterpret_cast<napi_env>(0x1000);
+    napi_callback_info info = reinterpret_cast<napi_callback_info>(0x1000);
+    napi_value val = reinterpret_cast<napi_value>(0x2000);
+    StatEntity entity;
+    entity.stat_.st_blocks = 128;
+    auto libnMock = LibnMock::GetMock();
+
+    EXPECT_CALL(*libnMock, InitArgs(testing::A<size_t>())).WillOnce(testing::Return(true));
+    EXPECT_CALL(*libnMock, GetThisVar()).WillOnce(testing::Return(reinterpret_cast<napi_value>(&entity)));
+    EXPECT_CALL(*libnMock, napi_unwrap(testing::_, testing::_, testing::_))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<2>(static_cast<void *>(&entity)), testing::Return(napi_ok)));
+    EXPECT_CALL(*libnMock, CreateInt64(testing::_, 128)).WillOnce(testing::Return(NVal { env, val }));
+    EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(0);
+    EXPECT_CALL(*libnMock, ThrowErrWithMsg(testing::_, testing::_)).Times(0);
+
+    auto result = ModuleFileIO::StatNExporter::GetBlocks(env, info);
+    testing::Mock::VerifyAndClearExpectations(libnMock.get());
+    ASSERT_NE(result, nullptr);
+
+    GTEST_LOG_(INFO) << "StatNExporter-end StatNExporter_Blocks_001";
+}
+
+/**
+ * @tc.name: StatNExporter_Blocks_003
+ * @tc.desc: Test function of StatNExporter::GetBlocks interface for FAILURE when the stat entity is missing.
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StatNExporter, StatNExporter_Blocks_003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StatNExporter-begin StatNExporter_Blocks_003";
+
+    napi_env env = reinterpret_cast<napi_env>(0x1000);
+    napi_callback_info info = reinterpret_cast<napi_callback_info>(0x1000);
+    napi_value val = reinterpret_cast<napi_value>(0x2000);
+    auto libnMock = LibnMock::GetMock();
+
+    EXPECT_CALL(*libnMock, InitArgs(testing::A<size_t>())).WillOnce(testing::Return(true));
+    EXPECT_CALL(*libnMock, GetThisVar()).WillOnce(testing::Return(val));
+    EXPECT_CALL(*libnMock, napi_unwrap(testing::_, testing::_, testing::_))
+        .WillOnce(testing::Return(napi_invalid_arg));
+    EXPECT_CALL(*libnMock, CreateInt64(testing::_, testing::_)).Times(0);
+    EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(0);
+
+    auto result = ModuleFileIO::StatNExporter::GetBlocks(env, info);
+    testing::Mock::VerifyAndClearExpectations(libnMock.get());
+    ASSERT_EQ(result, nullptr);
+
+    GTEST_LOG_(INFO) << "StatNExporter-end StatNExporter_Blocks_003";
+}
 } // namespace OHOS::FileManagement::ModuleFileIO::Test

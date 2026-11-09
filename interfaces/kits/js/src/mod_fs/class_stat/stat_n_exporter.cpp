@@ -313,6 +313,24 @@ napi_value StatNExporter::GetCtimeNs(napi_env env, napi_callback_info info)
     return NVal::CreateBigIntUint64(env, cTimeNsec).val_;
 }
 
+napi_value StatNExporter::GetBlocks(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs(NARG_CNT::ZERO)) {
+        HILOGE("Number of arguments unmatched");
+        NError(EINVAL).ThrowErr(env);
+        return nullptr;
+    }
+
+    auto statEntity = NClass::GetEntityOf<StatEntity>(env, funcArg.GetThisVar());
+    if (!statEntity) {
+        HILOGE("Failed to get stat entity");
+        return nullptr;
+    }
+
+    return NVal::CreateInt64(env, static_cast<int64_t>(statEntity->stat_.st_blocks)).val_;
+}
+
 #if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
 napi_value StatNExporter::GetLocation(napi_env env, napi_callback_info info)
 {
@@ -403,6 +421,7 @@ bool StatNExporter::Export()
         NVal::DeclareNapiGetter("atimeNs", GetAtimeNs),
         NVal::DeclareNapiGetter("mtimeNs", GetMtimeNs),
         NVal::DeclareNapiGetter("ctimeNs", GetCtimeNs),
+        NVal::DeclareNapiGetter("blocks", GetBlocks),
 #if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(PREVIEW_LINUX)
         NVal::DeclareNapiGetter("location", GetLocation),
 #endif
