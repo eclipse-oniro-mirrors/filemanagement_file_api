@@ -274,17 +274,18 @@ void FileWatcherManager::PollNotifyLoop(std::shared_ptr<PollState> state, int32_
             // already be closed and their numbers reused.
             break;
         }
-        if ((fds[0].revents & POLLNVAL) != 0 || (fds[1].revents & POLLNVAL) != 0) {
+        if ((static_cast<unsigned short>(fds[0].revents) & POLLNVAL) != 0 ||
+            (static_cast<unsigned short>(fds[1].revents) & POLLNVAL) != 0) {
             LOGE("Failed to poll NotifyFd, fd is invalid");
             break;
         }
-        if ((fds[0].revents & POLLIN) != 0) {
+        if ((static_cast<unsigned short>(fds[0].revents) & POLLIN) != 0) {
             // Drain the wake-up signal; the eventfd is only used to stop the thread.
             uint64_t wakeVal = 0;
             (void)read(eventFd, &wakeVal, sizeof(wakeVal));
             continue;
         }
-        if ((fds[1].revents & POLLIN) != 0) {
+        if ((static_cast<unsigned short>(fds[1].revents) & POLLIN) != 0) {
             ReadNotifyEvent(notifyFd);
         }
     }

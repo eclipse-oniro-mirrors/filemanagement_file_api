@@ -18,15 +18,27 @@
 using namespace OHOS::CJSystemapi::FileFs;
 
 namespace OHOS::CJSystemapi {
-static int64_t CalculateOffset(int64_t offset, int64_t fPointer)
+static bool CalculateOffset(int64_t offset, int64_t fPointer, int64_t &newOffset)
 {
     if (offset < 0) {
         LOGE("No specified offset provided");
-        offset = fPointer;
-    } else {
-        offset += fPointer;
+        newOffset = fPointer;
+        return true;
     }
-    return offset;
+    if (fPointer > 0 && offset > INT64_MAX - fPointer) {
+        LOGE("Failed to calculate offset, addition overflow");
+        return false;
+    }
+    newOffset = offset + fPointer;
+    return true;
+}
+
+static int64_t SafeAddReadLength(int64_t offset, int64_t length)
+{
+    if (length > 0 && offset > INT64_MAX - length) {
+        return INT64_MAX;
+    }
+    return offset + length;
 }
 static int DoWriteRAF(char* buf, size_t len, int fd, int64_t offset)
 {
@@ -112,13 +124,16 @@ std::tuple<int32_t, int64_t> RandomAccessFileImpl::WriteSync(char* buf, size_t l
         LOGE("Failed to get entity.");
         return {EIO, 0};
     }
-    int64_t newOffset = CalculateOffset(offset, entity_->filePointer);
+    int64_t newOffset = 0;
+    if (!CalculateOffset(offset, entity_->filePointer, newOffset)) {
+        return {GetErrorCode(EINVAL), 0};
+    }
     int writeCode = DoWriteRAF(buf, len, entity_->fd.get()->GetFD(), newOffset);
     if (writeCode < 0) {
         LOGE("Failed to read file for %{public}d", writeCode);
         return {GetErrorCode(-writeCode), 0};
     }
-    entity_->filePointer = newOffset + writeCode;
+    entity_->filePointer = SafeAddReadLength(newOffset, writeCode);
     return {SUCCESS_CODE, writeCode};
 }
 std::tuple<int32_t, int64_t> RandomAccessFileImpl::ReadSync(char* buf, size_t len, int64_t offset)
@@ -127,13 +142,16 @@ std::tuple<int32_t, int64_t> RandomAccessFileImpl::ReadSync(char* buf, size_t le
         LOGE("Failed to get entity.");
         return {EIO, 0};
     }
-    int64_t newOffset = CalculateOffset(offset, entity_->filePointer);
+    int64_t newOffset = 0;
+    if (!CalculateOffset(offset, entity_->filePointer, newOffset)) {
+        return {GetErrorCode(EINVAL), 0};
+    }
     int readCode = DoReadRAF(buf, len, entity_->fd.get()->GetFD(), newOffset);
     if (readCode < 0) {
         LOGE("Failed to read file for %{public}d", readCode);
         return {GetErrorCode(-readCode), 0};
     }
-    entity_->filePointer = newOffset + readCode;
+    entity_->filePointer = SafeAddReadLength(newOffset, readCode);
     return {SUCCESS_CODE, readCode};
 }
 std::shared_ptr<OHOS::FileManagement::ModuleFileIO::RandomAccessFileEntity> RandomAccessFileImpl::GetEntity()
