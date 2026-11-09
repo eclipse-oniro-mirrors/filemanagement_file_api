@@ -45,6 +45,7 @@ public:
 
     void TearDown() override
     {
+        LibnMock::GetMock()->ResetErrState();
         LibnMock::DisableMock();
     }
 

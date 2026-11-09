@@ -50,6 +50,7 @@ public:
 
     void TearDown() override
     {
+        LibnMock::GetMock()->ResetErrState();
         LibnMock::DisableMock();
         error_code error;
         fs::remove_all(TEST_ROOT, error);

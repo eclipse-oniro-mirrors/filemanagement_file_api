@@ -690,7 +690,7 @@ HWTEST_F(FsFileMappingTest, FsFileMappingTest_Remaining_LimitLessThanPosition_00
 
 /**
  * @tc.name: FsFileMappingTest_ReadFrom_PositionExceedLimit_001
- * @tc.desc: Test function of FsFileMapping::ReadFrom interface for SUCCESS when position >= limit.
+ * @tc.desc: Test function of FsFileMapping::ReadFrom interface when position >= limit (returns 0 bytes).
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1

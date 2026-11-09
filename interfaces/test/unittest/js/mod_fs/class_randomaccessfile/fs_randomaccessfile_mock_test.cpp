@@ -274,7 +274,6 @@ HWTEST_F(FsRandomAccessFileMockTest, FsRandomAccessFileMockTest_CloseSync_007, T
     auto uvMock = UvFsMock::GetMock();
     EXPECT_CALL(*uvMock, uv_fs_close(_, _, _, _)).WillOnce(Return(-1));
     raf->rafEntity->fd = make_unique<DistributedFS::FDGuard>(2048, false);
-
     auto result = raf->CloseSync();
 
     testing::Mock::VerifyAndClearExpectations(uvMock.get());
