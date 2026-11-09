@@ -14,6 +14,7 @@
  */
 
 #include "copy.h"
+#include <algorithm>
 #include <fcntl.h>
 #include <filesystem>
 #include <poll.h>
@@ -88,9 +89,9 @@ static int SendFileCore(std::unique_ptr<DistributedFS::FDGuard> srcFdg,
     }
     int32_t ret = 0;
     int64_t size = static_cast<int64_t>(srcStat.st_size);
-    while (size >= 0) {
+    while (size > 0) {
         ret = uv_fs_sendfile(nullptr, sendFileReq.get(), destFdg->GetFD(), srcFdg->GetFD(),
-            offset, MAX_SIZE, nullptr);
+            offset, std::min(MAX_SIZE, static_cast<size_t>(size)), nullptr);
         if (ret < 0) {
             LOGE("Failed to sendfile by errno : %{public}d", errno);
             return errno;
