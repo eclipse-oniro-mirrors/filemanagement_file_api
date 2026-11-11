@@ -68,7 +68,7 @@ ohos_shared_library("swapfs_native") {
     defines += [ "SWAPFS_USE_LIBURING" ]
     external_deps += [
       "ipc:ipc_single",
-      "liburing",
+      "liburing:liburing",
     ]
   }
 
