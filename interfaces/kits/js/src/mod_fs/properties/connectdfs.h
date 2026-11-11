@@ -16,7 +16,9 @@
 #ifndef FILEMANAGEMENT_FILE_API_CONNECTDFS_H
 #define FILEMANAGEMENT_FILE_API_CONNECTDFS_H
 
+#include <atomic>
 #include <chrono>
+#include <mutex>
 #include <set>
 #include <sys/inotify.h>
 #include <thread>
@@ -61,9 +63,11 @@ public:
     void SetConnectDfsEnv(const napi_env &env);
     void SetConnectDfsCBRef(const napi_ref &ref);
     void SetConnectDfsPromiseRef(const napi_deferred &promiseDeferred);
+    void ClearEnvResource();
 
 private:
-    napi_env env_ = nullptr;
+    std::atomic<napi_env> env_ { nullptr };
+    std::mutex refMutex_;
     napi_ref onStatusRef_ = nullptr;
     napi_deferred promiseDeferred_ = nullptr;
 };

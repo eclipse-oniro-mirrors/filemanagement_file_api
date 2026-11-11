@@ -175,5 +175,39 @@ HWTEST_F(TaskSignalTest, Task_Signal_MarkDfsTask_0000, testing::ext::TestSize.Le
     auto ret = signal->Cancel();
     EXPECT_EQ(ret, 0);
 }
+
+/**
+ * @tc.name: Task_Signal_CancelBeforeMarkDfsTask_0000
+ * @tc.desc: A cancel() issued before MarkDfsTask() must not be lost: the task info is
+ *           written first, then the flag is published, and IsCanceled() still reports true.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: NAN
+ */
+HWTEST_F(TaskSignalTest, Task_Signal_CancelBeforeMarkDfsTask_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "TaskSignalTest-begin Task_Signal_CancelBeforeMarkDfsTask_0000";
+    auto signal = std::make_shared<TaskSignal>();
+    EXPECT_FALSE(signal->IsCanceled());
+
+    // cancel() before MarkDfsTask() only records needCancel_ and returns success.
+    auto ret = signal->Cancel();
+    EXPECT_EQ(ret, 0);
+    EXPECT_TRUE(signal->IsCanceled());
+
+    // Same order as Copy::ExecCopy(): write task info first, then publish dfsCopyTask_.
+    std::string srcPath = "/data/test/srcPath.txt";
+    std::string srcUri = "/data/test/src.txt";
+    std::string dstUri = "/data/test/dst.txt";
+    signal->SetCopyTaskUri(srcUri, dstUri, srcPath);
+    signal->MarkDfsTask();
+
+    EXPECT_TRUE(signal->dfsCopyTask_.load());
+    EXPECT_EQ(signal->srcUri_, srcUri);
+    EXPECT_EQ(signal->dstUri_, dstUri);
+    // The cancellation recorded before MarkDfsTask() is still visible afterwards.
+    EXPECT_TRUE(signal->IsCanceled());
+}
 } // namespace DistributedFS
 } // namespace OHOS
