@@ -76,7 +76,7 @@ napi_value WatcherNExporter::Stop(napi_env env, napi_callback_info info)
     if (ret != ERRNO_NOERR) {
         HILOGE("Failed to stopNotify errno:%{public}d", errno);
         METRICS_ERROR("CoreFileKit.fileio.Dyn.Watcher.stop.Err", NError(ret).GetErrCode());
-        NError(ret).ThrowErr(env);
+        NError(ret, "Watcher has not been started").ThrowErr(env);
         return nullptr;
     }
     return NVal::CreateUndefined(env).val_;

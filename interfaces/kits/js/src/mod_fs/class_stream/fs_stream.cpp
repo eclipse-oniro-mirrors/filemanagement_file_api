@@ -122,7 +122,7 @@ FsResult<size_t> FsStream::Write(const ArrayBuffer &buf, const optional<WriteOpt
     auto fp = GetFilePtr();
     if (!fp) {
         HILOGE("Failed to get file ptr");
-        return FsResult<size_t>::Error(EIO);
+        return FsResult<size_t>::ErrorWithMsg(EIO, "File descriptor in bad state");
     }
 
     auto [succ, retLen, offset] = ValidWriteArg(buf.length, options);
@@ -157,7 +157,7 @@ FsResult<size_t> FsStream::Write(const string &buf, const optional<WriteOptions>
     auto fp = GetFilePtr();
     if (!fp) {
         HILOGE("Failed to get file ptr");
-        return FsResult<size_t>::Error(EIO);
+        return FsResult<size_t>::ErrorWithMsg(EIO, "File descriptor in bad state");
     }
 
     size_t bufLen = static_cast<size_t>(buf.length());
@@ -193,7 +193,7 @@ FsResult<size_t> FsStream::Read(ArrayBuffer &buf, const optional<ReadOptions> &o
     auto fp = GetFilePtr();
     if (!fp) {
         HILOGE("Failed to get file ptr");
-        return FsResult<size_t>::Error(EIO);
+        return FsResult<size_t>::ErrorWithMsg(EIO, "File descriptor in bad state");
     }
 
     auto [succ, retLen, offset] = ValidReadArg(buf.length, options);
@@ -225,7 +225,7 @@ FsResult<void> FsStream::Flush()
     auto fp = GetFilePtr();
     if (fp == nullptr) {
         HILOGE("Failed to get entity of Stream");
-        return FsResult<void>::Error(EIO);
+        return FsResult<void>::ErrorWithMsg(EIO, "File descriptor in bad state");
     }
 
     FileFsTrace traceFflush("fflush");
@@ -246,7 +246,7 @@ FsResult<void> FsStream::Close()
         std::lock_guard<std::mutex> lock(mtx);
         if (!streamEntity) {
             HILOGE("Failed to get entity of Stream, may closed twice");
-            return FsResult<void>::Error(EIO);
+            return FsResult<void>::ErrorWithMsg(EIO, "File descriptor in bad state");
         }
         streamEntity = nullptr;
     }
@@ -260,7 +260,7 @@ FsResult<int64_t> FsStream::Seek(const int64_t &offset, const optional<int32_t> 
     auto fp = GetFilePtr();
     if (fp == nullptr) {
         HILOGE("Failed to get file ptr");
-        return FsResult<int64_t>::Error(ENOENT);
+        return FsResult<int64_t>::ErrorWithMsg(ENOENT, "File descriptor in bad state");
     }
 
     if (typeOpt.has_value()) {

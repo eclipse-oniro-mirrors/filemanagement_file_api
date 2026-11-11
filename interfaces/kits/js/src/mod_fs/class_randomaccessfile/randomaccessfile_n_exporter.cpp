@@ -78,7 +78,7 @@ napi_value RandomAccessFileNExporter::GetFD(napi_env env, napi_callback_info inf
     auto [succEntity, rafEntity] = GetRAFEntity(env, funcArg.GetThisVar());
     if (!succEntity) {
         HILOGE("Failed to get entity of RandomAccessFile");
-        NError(EIO).ThrowErr(env);
+        NError(EIO, "File descriptor in bad state").ThrowErr(env);
         return nullptr;
     }
     return NVal::CreateInt32(env, rafEntity->fd.get()->GetFD()).val_;
@@ -95,7 +95,7 @@ napi_value RandomAccessFileNExporter::GetFPointer(napi_env env, napi_callback_in
     auto [succEntity, rafEntity] = GetRAFEntity(env, funcArg.GetThisVar());
     if (!succEntity) {
         HILOGE("Failed to get entity of RandomAccessFile");
-        NError(EIO).ThrowErr(env);
+        NError(EIO, "File descriptor in bad state").ThrowErr(env);
         return nullptr;
     }
     return NVal::CreateInt64(env, rafEntity->filePointer).val_;
@@ -112,11 +112,11 @@ napi_value RandomAccessFileNExporter::SetFilePointerSync(napi_env env, napi_call
     auto [succEntity, rafEntity] = GetRAFEntity(env, funcArg.GetThisVar());
     if (!succEntity) {
         HILOGE("Failed to get entity of RandomAccessFile");
-        NError(EIO).ThrowErr(env);
+        NError(EIO, "File descriptor in bad state").ThrowErr(env);
         return nullptr;
     }
     auto [succ, fp] = NVal(env, funcArg[NARG_POS::FIRST]).ToInt64();
-    if (!succ) {
+    if (!succ || fp < 0) {
         HILOGE("Invalid filePointer");
         NError(EINVAL).ThrowErr(env);
         return nullptr;
@@ -148,7 +148,7 @@ napi_value RandomAccessFileNExporter::ReadSync(napi_env env, napi_callback_info 
     if (!succEntity) {
         HILOGE("Failed to get entity of RandomAccessFile");
         METRICS_ERROR("CoreFileKit.fileio.Dyn.RandomAccessFile.readSync.Err", NError(EIO).GetErrCode());
-        NError(EIO).ThrowErr(env);
+        NError(EIO, "File descriptor in bad state").ThrowErr(env);
         return nullptr;
     }
     auto [succ, buf, len, offset] =
@@ -202,7 +202,7 @@ static napi_value ReadExec(napi_env env, NFuncArg &funcArg, RandomAccessFileEnti
         if (!rafEntity || !rafEntity->fd.get()) {
             HILOGE("RandomAccessFile has been closed in read cbExec possibly");
             METRICS_ERROR("CoreFileKit.fileio.Dyn.RandomAccessFile.read.Err", NError(EIO).GetErrCode());
-            return NError(EIO);
+            return NError(EIO, "File descriptor in bad state");
         }
         int actLen = DoReadRAF(env, buf, len, rafEntity->fd.get()->GetFD(), offset);
         if (actLen < 0) {
@@ -243,7 +243,7 @@ napi_value RandomAccessFileNExporter::Read(napi_env env, napi_callback_info info
     if (!succ) {
         HILOGE("Failed to get entity of RandomAccessFile");
         METRICS_ERROR("CoreFileKit.fileio.Dyn.RandomAccessFile.read.Err", NError(EIO).GetErrCode());
-        NError(EIO).ThrowErr(env);
+        NError(EIO, "File descriptor in bad state").ThrowErr(env);
         return nullptr;
     }
     return ReadExec(env, funcArg, rafEntity);
@@ -261,7 +261,7 @@ napi_value RandomAccessFileNExporter::WriteSync(napi_env env, napi_callback_info
     if (!succEntity) {
         HILOGE("Failed to get entity of RandomAccessFile");
         METRICS_ERROR("CoreFileKit.fileio.Dyn.RandomAccessFile.writeSync.Err", NError(EIO).GetErrCode());
-        NError(EIO).ThrowErr(env);
+        NError(EIO, "File descriptor in bad state").ThrowErr(env);
         return nullptr;
     }
     auto [succ, ignore, buf, len, offset] =
@@ -316,7 +316,7 @@ static napi_value WriteExec(napi_env env, NFuncArg &funcArg, RandomAccessFileEnt
         if (!rafEntity || !rafEntity->fd.get()) {
             HILOGE("RandomAccessFile has been closed in write cbExec possibly");
             METRICS_ERROR("CoreFileKit.fileio.Dyn.RandomAccessFile.write.Err", NError(EIO).GetErrCode());
-            return NError(EIO);
+            return NError(EIO, "File descriptor in bad state");
         }
         int writeLen = DoWriteRAF(env, buf, len, fd, offset);
         if (writeLen < 0) {
@@ -357,7 +357,7 @@ napi_value RandomAccessFileNExporter::Write(napi_env env, napi_callback_info inf
     if (!succ) {
         HILOGE("Failed to get entity of RandomAccessFile");
         METRICS_ERROR("CoreFileKit.fileio.Dyn.RandomAccessFile.write.Err", NError(EIO).GetErrCode());
-        NError(EIO).ThrowErr(env);
+        NError(EIO, "File descriptor in bad state").ThrowErr(env);
         return nullptr;
     }
     return WriteExec(env, funcArg, rafEntity);
@@ -416,7 +416,7 @@ napi_value RandomAccessFileNExporter::CloseSync(napi_env env, napi_callback_info
     if (!succEntity) {
         HILOGE("Failed to get entity of RandomAccessFile");
         METRICS_ERROR("CoreFileKit.fileio.Dyn.RandomAccessFile.close.Err", NError(EIO).GetErrCode());
-        NError(EIO).ThrowErr(env);
+        NError(EIO, "File descriptor in bad state").ThrowErr(env);
         return nullptr;
     }
 
@@ -432,7 +432,7 @@ napi_value RandomAccessFileNExporter::CloseSync(napi_env env, napi_callback_info
     if (!fp) {
         HILOGE("Failed to remove entity of RandomAccessFile");
         METRICS_ERROR("CoreFileKit.fileio.Dyn.RandomAccessFile.close.Err", NError(EIO).GetErrCode());
-        NError(EIO).ThrowErr(env);
+        NError(EIO, "File descriptor in bad state").ThrowErr(env);
         return nullptr;
     }
     return NVal::CreateUndefined(env).val_;
@@ -523,7 +523,7 @@ napi_value RandomAccessFileNExporter::GetReadStream(napi_env env, napi_callback_
     if (!succEntity) {
         HILOGE("Failed to get entity of RandomAccessFile");
         METRICS_ERROR("CoreFileKit.fileio.Dyn.RandomAccessFile.getReadStream.Err", NError(EIO).GetErrCode());
-        NError(EIO).ThrowErr(env);
+        NError(EIO, "File descriptor in bad state").ThrowErr(env);
         return nullptr;
     }
 
@@ -551,7 +551,7 @@ napi_value RandomAccessFileNExporter::GetWriteStream(napi_env env, napi_callback
     if (!succEntity) {
         HILOGE("Failed to get entity of RandomAccessFile");
         METRICS_ERROR("CoreFileKit.fileio.Dyn.RandomAccessFile.getWriteStream.Err", NError(EIO).GetErrCode());
-        NError(EIO).ThrowErr(env);
+        NError(EIO, "File descriptor in bad state").ThrowErr(env);
         return nullptr;
     }
 

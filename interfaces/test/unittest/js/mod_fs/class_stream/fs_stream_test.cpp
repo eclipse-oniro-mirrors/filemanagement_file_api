@@ -111,7 +111,7 @@ HWTEST_F(FsStreamTest, FsStreamTest_Close_002, testing::ext::TestSize.Level1)
     EXPECT_FALSE(ret.IsSuccess());
     auto err = ret.GetError();
     EXPECT_EQ(err.GetErrNo(), 13900005);
-    EXPECT_EQ(err.GetErrMsg(), "I/O error");
+    EXPECT_EQ(err.GetErrMsg(), "File descriptor in bad state");
 
     GTEST_LOG_(INFO) << "FsStreamTest-end FsStreamTest_Close_002";
 }
@@ -134,7 +134,7 @@ HWTEST_F(FsStreamTest, FsStreamTest_Flush_001, testing::ext::TestSize.Level1)
     EXPECT_FALSE(ret.IsSuccess());
     auto err = ret.GetError();
     EXPECT_EQ(err.GetErrNo(), 13900005);
-    EXPECT_EQ(err.GetErrMsg(), "I/O error");
+    EXPECT_EQ(err.GetErrMsg(), "File descriptor in bad state");
 
     GTEST_LOG_(INFO) << "FsStreamTest-end FsStreamTest_Flush_001";
 }
@@ -184,7 +184,7 @@ HWTEST_F(FsStreamTest, FsStreamTest_Seek_001, testing::ext::TestSize.Level1)
     EXPECT_FALSE(ret.IsSuccess());
     auto err = ret.GetError();
     EXPECT_EQ(err.GetErrNo(), 13900002);
-    EXPECT_EQ(err.GetErrMsg(), "No such file or directory");
+    EXPECT_EQ(err.GetErrMsg(), "File descriptor in bad state");
 
     GTEST_LOG_(INFO) << "FsStreamTest-end FsStreamTest_Seek_001";
 }
@@ -296,7 +296,7 @@ HWTEST_F(FsStreamTest, FsStreamTest_Write_001, testing::ext::TestSize.Level1)
     EXPECT_FALSE(ret.IsSuccess());
     auto err = ret.GetError();
     EXPECT_EQ(err.GetErrNo(), 13900005);
-    EXPECT_EQ(err.GetErrMsg(), "I/O error");
+    EXPECT_EQ(err.GetErrMsg(), "File descriptor in bad state");
 
     GTEST_LOG_(INFO) << "FsStreamTest-end FsStreamTest_Write_001";
 }
@@ -320,7 +320,7 @@ HWTEST_F(FsStreamTest, FsStreamTest_Write_002, testing::ext::TestSize.Level1)
     EXPECT_FALSE(ret.IsSuccess());
     auto err = ret.GetError();
     EXPECT_EQ(err.GetErrNo(), 13900005);
-    EXPECT_EQ(err.GetErrMsg(), "I/O error");
+    EXPECT_EQ(err.GetErrMsg(), "File descriptor in bad state");
 
     GTEST_LOG_(INFO) << "FsStreamTest-end FsStreamTest_Write_002";
 }
@@ -753,7 +753,7 @@ HWTEST_F(FsStreamTest, FsStreamTest_Read_001, testing::ext::TestSize.Level1)
     EXPECT_FALSE(ret.IsSuccess());
     auto err = ret.GetError();
     EXPECT_EQ(err.GetErrNo(), 13900005);
-    EXPECT_EQ(err.GetErrMsg(), "I/O error");
+    EXPECT_EQ(err.GetErrMsg(), "File descriptor in bad state");
 
     GTEST_LOG_(INFO) << "FsStreamTest-end FsStreamTest_Read_001";
 }

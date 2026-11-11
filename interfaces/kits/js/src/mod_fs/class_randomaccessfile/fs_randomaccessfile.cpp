@@ -59,7 +59,7 @@ FsResult<int32_t> FsRandomAccessFile::GetFD() const
 {
     if (!rafEntity) {
         HILOGE("Failed to get entity of RandomAccessFile");
-        return FsResult<int32_t>::Error(EIO);
+        return FsResult<int32_t>::ErrorWithMsg(EIO, "File descriptor in bad state");
     }
     return FsResult<int32_t>::Success(rafEntity->fd.get()->GetFD());
 }
@@ -68,7 +68,7 @@ FsResult<int64_t> FsRandomAccessFile::GetFPointer() const
 {
     if (!rafEntity) {
         HILOGE("Failed to get entity of RandomAccessFile");
-        return FsResult<int64_t>::Error(EIO);
+        return FsResult<int64_t>::ErrorWithMsg(EIO, "File descriptor in bad state");
     }
     return FsResult<int64_t>::Success(rafEntity->filePointer);
 }
@@ -77,7 +77,7 @@ FsResult<void> FsRandomAccessFile::SetFilePointerSync(const int64_t &fp) const
 {
     if (!rafEntity) {
         HILOGE("Failed to get entity of RandomAccessFile");
-        return FsResult<void>::Error(EIO);
+        return FsResult<void>::ErrorWithMsg(EIO, "File descriptor in bad state");
     }
     rafEntity->filePointer = fp;
     return FsResult<void>::Success();
@@ -132,7 +132,7 @@ FsResult<int64_t> FsRandomAccessFile::ReadSync(ArrayBuffer &buffer, const option
 {
     if (!rafEntity) {
         HILOGE("Failed to get entity of RandomAccessFile");
-        return FsResult<int64_t>::Error(EIO);
+        return FsResult<int64_t>::ErrorWithMsg(EIO, "File descriptor in bad state");
     }
     auto [succ, buf, len, offset] = ValidReadArg(buffer, options);
     if (!succ) {
@@ -189,7 +189,7 @@ FsResult<int64_t> FsRandomAccessFile::WriteSync(const string &buffer, const opti
 {
     if (!rafEntity) {
         HILOGE("Failed to get entity of RandomAccessFile");
-        return FsResult<int64_t>::Error(EIO);
+        return FsResult<int64_t>::ErrorWithMsg(EIO, "File descriptor in bad state");
     }
 
     bool succ = false;
@@ -217,7 +217,7 @@ FsResult<int64_t> FsRandomAccessFile::WriteSync(const ArrayBuffer &buffer, const
 {
     if (!rafEntity) {
         HILOGE("Failed to get entity of RandomAccessFile");
-        return FsResult<int64_t>::Error(EIO);
+        return FsResult<int64_t>::ErrorWithMsg(EIO, "File descriptor in bad state");
     }
 
     bool succ = false;
@@ -283,7 +283,7 @@ FsResult<void> FsRandomAccessFile::CloseSync() const
 {
     if (!rafEntity) {
         HILOGE("Failed to get entity of RandomAccessFile");
-        return FsResult<void>::Error(EIO);
+        return FsResult<void>::ErrorWithMsg(EIO, "File descriptor in bad state");
     }
     uint64_t fileTag = reinterpret_cast<uintptr_t>(rafEntity.get());
     auto err = CloseFdWithFdsan(rafEntity->fd.get()->GetFD(), fileTag);
