@@ -385,6 +385,7 @@ void CopyImpl::OnFileReceive(std::shared_ptr<FileInfos> infos)
 
 std::shared_ptr<ReceiveInfo> CopyImpl::GetReceivedInfo(int wd, std::shared_ptr<CjCallbackObject> callback)
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     auto it = find_if(callback->wds.begin(), callback->wds.end(), [wd](const auto& item) {
         return item.first == wd;
     });
