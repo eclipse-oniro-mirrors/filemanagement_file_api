@@ -61,17 +61,19 @@
 #include "iservice_registry.h"
 #include "listfile_ext_napi.h"
 #include "listfile.h"
-#include "lseek.h"
 #include "napi/mmap_napi.h"
 #include "move.h"
 #include "movedir.h"
 #include "read_lines.h"
-#include "read_text.h"
 #include "rust_file.h"
-#include "symlink.h"
 #include "system_ability_definition.h"
 #include "watcher.h"
 #include "xattr.h"
+#endif
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+#include "lseek.h"
+#include "read_text.h"
+#include "symlink.h"
 #endif
 
 #ifdef FILE_API_TRACE
@@ -851,17 +853,19 @@ bool PropNExporter::ExportSync()
         NVal::DeclareNapiFunction("fdopenStreamSync", FdopenStream::Sync),
         NVal::DeclareNapiFunction("listFileExtSync", ListFileExtNapi::Sync),
         NVal::DeclareNapiFunction("listFileSync", ListFile::Sync),
-        NVal::DeclareNapiFunction("lseek", Lseek::Sync),
         NVal::DeclareNapiFunction("mmapSync", MmapNapi::Sync),
         NVal::DeclareNapiFunction("moveDirSync", MoveDir::Sync),
         NVal::DeclareNapiFunction("moveFileSync", Move::Sync),
         NVal::DeclareNapiFunction("readLinesSync", ReadLines::Sync),
-        NVal::DeclareNapiFunction("readTextSync", ReadText::Sync),
-        NVal::DeclareNapiFunction("symlinkSync", Symlink::Sync),
         NVal::DeclareNapiFunction("setxattrSync", Xattr::SetSync),
         NVal::DeclareNapiFunction("getxattrSync", Xattr::GetSync),
         NVal::DeclareNapiFunction("setxattr", Xattr::SetAsync),
         NVal::DeclareNapiFunction("getxattr", Xattr::GetAsync),
+#endif
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+        NVal::DeclareNapiFunction("lseek", Lseek::Sync),
+        NVal::DeclareNapiFunction("readTextSync", ReadText::Sync),
+        NVal::DeclareNapiFunction("symlinkSync", Symlink::Sync),
 #endif
     });
 }
@@ -897,11 +901,13 @@ bool PropNExporter::ExportAsync()
         NVal::DeclareNapiFunction("moveDir", MoveDir::Async),
         NVal::DeclareNapiFunction("moveFile", Move::Async),
         NVal::DeclareNapiFunction("readLines", ReadLines::Async),
-        NVal::DeclareNapiFunction("readText", ReadText::Async),
-        NVal::DeclareNapiFunction("symlink", Symlink::Async),
         NVal::DeclareNapiFunction("createWatcher", Watcher::CreateWatcher),
         NVal::DeclareNapiFunction("connectDfs", ConnectDfs::Async),
         NVal::DeclareNapiFunction("disconnectDfs", DisconnectDfs::Async),
+#endif
+#if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM)
+        NVal::DeclareNapiFunction("readText", ReadText::Async),
+        NVal::DeclareNapiFunction("symlink", Symlink::Async),
 #endif
     });
 }
