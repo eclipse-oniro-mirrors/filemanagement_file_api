@@ -33,26 +33,6 @@ namespace FileManagement {
 namespace ModuleFileIO {
 namespace fs = std::filesystem;
 
-namespace {
-struct EnvCleanupContext {
-    explicit EnvCleanupContext(sptr<NAPIDfsListener> listener) : listener_(std::move(listener)) {}
-    ~EnvCleanupContext() = default;
-    sptr<NAPIDfsListener> listener_;
-};
-
-void ConnectDfsEnvCleanup(void *arg)
-{
-    auto *context = static_cast<EnvCleanupContext *>(arg);
-    if (context == nullptr) {
-        return;
-    }
-    if (context->listener_ != nullptr) {
-        context->listener_->ClearEnvResource();
-    }
-    delete context;
-}
-} // namespace
-
 ConnectDfsCB *ConnectDfs::CreateConnectDfsCBCBInfo(napi_env &env)
 {
     HILOGI("CreateConnectDfsCBCBInfo called");
@@ -80,13 +60,6 @@ void cbExec(napi_env env, void *data)
     }
     connectDfsCB->jsCallbackObject->SetConnectDfsEnv(env);
     HILOGI("connectDfsCB set env success");
-    auto cleanupContext = new (std::nothrow) EnvCleanupContext(dfsListeners);
-    if (cleanupContext == nullptr) {
-        HILOGE("Failed to allocate env cleanup context.");
-    } else if (napi_add_env_cleanup_hook(env, ConnectDfsEnvCleanup, cleanupContext) != napi_ok) {
-        HILOGE("Failed to add env cleanup hook.");
-        delete cleanupContext;
-    }
     if (connectDfsCB->dfsConnectCB.callback != nullptr) {
         connectDfsCB->jsCallbackObject->
             SetConnectDfsCBRef(connectDfsCB->dfsConnectCB.callback);
@@ -233,29 +206,17 @@ ConnectDfsCB *CheckAndGetParameters(ConnectDfsCB *connectDfsCB, napi_handle_scop
 
 void NAPIDfsListener::SetConnectDfsEnv(const napi_env &env)
 {
-    env_.store(env);
+    env_ = env;
 }
 
 void NAPIDfsListener::SetConnectDfsCBRef(const napi_ref &ref)
 {
-    std::lock_guard<std::mutex> lock(refMutex_);
     onStatusRef_ = ref;
 }
 
 void NAPIDfsListener::SetConnectDfsPromiseRef(const napi_deferred &promiseDeferred)
 {
-    std::lock_guard<std::mutex> lock(refMutex_);
     promiseDeferred_ = promiseDeferred;
-}
-
-void NAPIDfsListener::ClearEnvResource()
-{
-    // Only invalidate the env. The NAPI reference is env-scoped and is released with the
-    // environment, so it must not be deleted here: an already queued OnStatus task may
-    // still read it before the env teardown completes.
-    env_.store(nullptr);
-    std::lock_guard<std::mutex> lock(refMutex_);
-    promiseDeferred_ = nullptr;
 }
 
 napi_value WrapInt32(napi_env &env, int32_t num, const std::string &paramName)
@@ -345,28 +306,16 @@ void NAPIDfsListener::OnStatus(const std::string &networkId, int32_t status, con
 {
     HILOGI("NAPIDfsListener::OnStatus called");
 
-    napi_env env = env_.load();
-    if (env == nullptr) {
-        HILOGE("NAPIDfsListener::OnStatus, env has been released");
-        return;
-    }
-    napi_ref callbackRef = nullptr;
-    napi_deferred deferred = nullptr;
-    {
-        std::lock_guard<std::mutex> lock(refMutex_);
-        callbackRef = onStatusRef_;
-        deferred = promiseDeferred_;
-    }
     auto connectDfsCB = new (std::nothrow) ConnectDfsCB;
     if (connectDfsCB == nullptr) {
         HILOGE("NAPIDfsListener::OnStatus, connectDfsCb == nullptr");
         return;
     }
-    connectDfsCB->cbBase.cbInfo.env = env;
-    if (callbackRef != nullptr) {
-        connectDfsCB->cbBase.cbInfo.callback = callbackRef;
+    connectDfsCB->cbBase.cbInfo.env = env_;
+    if (onStatusRef_ != nullptr) {
+        connectDfsCB->cbBase.cbInfo.callback = onStatusRef_;
     } else {
-        connectDfsCB->cbBase.deferred = deferred;
+        connectDfsCB->cbBase.deferred = promiseDeferred_;
     }
     connectDfsCB->networkId = networkId;
     connectDfsCB->status = status;
@@ -374,7 +323,7 @@ void NAPIDfsListener::OnStatus(const std::string &networkId, int32_t status, con
     auto task = [connectDfsCB] () {
         UvWorkAfterOnStaus(connectDfsCB);
     };
-    auto rev = napi_send_event(env, task, napi_eprio_immediate, "fs.DfsListeners.onStatus");
+    auto rev = napi_send_event(env_, task, napi_eprio_immediate, "fs.DfsListeners.onStatus");
     if (rev != ERRNO_NOERR) {
         delete connectDfsCB;
         connectDfsCB = nullptr;
