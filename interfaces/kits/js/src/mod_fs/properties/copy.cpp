@@ -379,12 +379,8 @@ int32_t Copy::ExecCopy(std::shared_ptr<FileInfos> infos, std::shared_ptr<JsCallb
         };
     }
     if (infos->taskSignal != nullptr) {
-        // P0-4: write the task information before publishing dfsCopyTask_, so that a cancel
-        // which observes the flag always reads fully initialized strings.
         infos->taskSignal->SetCopyTaskUri(infos->srcUri, infos->destUri, infos->srcPath);
         infos->taskSignal->MarkDfsTask();
-        // P1-6: a cancel() issued before MarkDfsTask() only sets needCancel_ and returns
-        // success. Check it here instead of silently dropping the cancellation.
         if (infos->taskSignal->IsCanceled()) {
             LOGE("Copy task was canceled before start.");
             return FileManagement::LibN::DFS_CANCEL_SUCCESS;
