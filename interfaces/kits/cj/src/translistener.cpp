@@ -193,27 +193,29 @@ std::string TransListener::GetNetworkIdFromUri(const std::string &uri)
     return uri.substr(uri.find(NETWORK_PARA) + NETWORK_PARA.size(), uri.size());
 }
 
-void TransListener::CallbackComplete(TransListener* transListener, CProgress progress)
+void TransListener::CallbackComplete(std::shared_ptr<CjCallbackObject> callback, CProgress progress)
 {
-    if (transListener == nullptr ||
-        transListener->callback_ == nullptr ||
-        transListener->callback_->callback == nullptr) {
+    if (callback == nullptr || callback->callback == nullptr) {
         LOGE("Failed to get copy progress callback.");
         return;
     }
-    transListener->callback_->callback(progress);
+    callback->callback(progress);
 }
 
 int32_t TransListener::OnFileReceive(uint64_t totalBytes, uint64_t processedBytes)
 {
-    std::lock_guard<std::mutex> lock(callbackMutex_);
-    if (callback_ == nullptr) {
-        LOGE("Failed to parse watcher callback");
-        return ENOMEM;
+    std::shared_ptr<CjCallbackObject> callback;
+    {
+        std::lock_guard<std::mutex> lock(callbackMutex_);
+        if (callback_ == nullptr) {
+            LOGE("Failed to parse watcher callback");
+            return ENOMEM;
+        }
+        callback = callback_;
     }
     CProgress progress = { .processedSize = processedBytes, .totalSize = totalBytes };
-    std::thread([this, progress]() {
-        CallbackComplete(this, progress);
+    std::thread([callback, progress]() {
+        CallbackComplete(callback, progress);
     }).detach();
     return ERRNO_NOERR;
 }
@@ -225,8 +227,11 @@ int32_t TransListener::OnFinished(const std::string &sessionName)
         std::lock_guard<std::mutex> lock(callbackMutex_);
         callback_ = nullptr;
     }
-    copyEvent_.copyResult = SUCCESS;
-    cv_.notify_all();
+    {
+        std::lock_guard<std::mutex> lock(cvMutex_);
+        copyEvent_.copyResult = SUCCESS;
+        cv_.notify_all();
+    }
     return ERRNO_NOERR;
 }
 
@@ -237,9 +242,12 @@ int32_t TransListener::OnFailed(const std::string &sessionName, int32_t errorCod
         std::lock_guard<std::mutex> lock(callbackMutex_);
         callback_ = nullptr;
     }
-    copyEvent_.copyResult = FAILED;
-    copyEvent_.errorCode = errorCode;
-    cv_.notify_all();
+    {
+        std::lock_guard<std::mutex> lock(cvMutex_);
+        copyEvent_.copyResult = FAILED;
+        copyEvent_.errorCode = errorCode;
+        cv_.notify_all();
+    }
     return ERRNO_NOERR;
 }
 }

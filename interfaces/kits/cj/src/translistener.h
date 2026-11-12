@@ -41,7 +41,7 @@ public:
         std::shared_ptr<FileInfos> fileInfos, std::shared_ptr<CjCallbackObject> callback);
 private:
     static std::string GetNetworkIdFromUri(const std::string &uri);
-    static void CallbackComplete(TransListener* transListener, CProgress progress);
+    static void CallbackComplete(std::shared_ptr<CjCallbackObject> callback, CProgress progress);
     static void RmDir(const std::string &path);
     static std::string CreateDfsCopyPath();
     static std::string GetFileName(const std::string &path);

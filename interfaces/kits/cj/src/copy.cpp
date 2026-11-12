@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <thread>
+#include <unistd.h>
 #include "datashare_helper.h"
 #include "file_uri.h"
 #include "cj_file_utils.h"
@@ -384,6 +385,7 @@ void CopyImpl::OnFileReceive(std::shared_ptr<FileInfos> infos)
 
 std::shared_ptr<ReceiveInfo> CopyImpl::GetReceivedInfo(int wd, std::shared_ptr<CjCallbackObject> callback)
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     auto it = find_if(callback->wds.begin(), callback->wds.end(), [wd](const auto& item) {
         return item.first == wd;
     });
@@ -501,7 +503,7 @@ void CopyImpl::GetNotifyEvent(std::shared_ptr<FileInfos> infos)
     prctl(PR_SET_NAME, "NotifyThread");
     nfds_t nfds = 2;
     struct pollfd fds[2];
-    fds[0].events = 0;
+    fds[0].events = POLLIN;
     fds[1].events = POLLIN;
     fds[0].fd = infos->eventFd;
     fds[1].fd = infos->notifyFd;
@@ -511,6 +513,10 @@ void CopyImpl::GetNotifyEvent(std::shared_ptr<FileInfos> infos)
             if (static_cast<unsigned short>(fds[0].revents) & POLLNVAL) {
                 infos->run = false;
                 return;
+            }
+            if (static_cast<unsigned short>(fds[0].revents) & POLLIN) {
+                uint64_t wakeVal = 0;
+                (void)read(infos->eventFd, &wakeVal, sizeof(wakeVal));
             }
             if (static_cast<unsigned short>(fds[1].revents) & POLLIN) {
                 ReadNotifyEvent(infos);
@@ -600,9 +606,15 @@ int64_t CopyImpl::DoCopy(std::shared_ptr<FileInfos> infos, std::shared_ptr<CjCal
         return ret;
     }
     auto result = ExecLocal(infos, callback);
-    CloseNotifyFd(infos, callback);
     infos->run = false;
+    if (infos->eventFd >= 0) {
+        uint64_t wakeVal = 1;
+        if (write(infos->eventFd, &wakeVal, sizeof(wakeVal)) < 0) {
+            LOGE("Failed to wake up event fd errCode:%{public}d", errno);
+        }
+    }
     WaitNotifyFinished(callback);
+    CloseNotifyFd(infos, callback);
     if (result != ERRNO_NOERR) {
         infos->exceptionCode = result;
         return infos->exceptionCode;
