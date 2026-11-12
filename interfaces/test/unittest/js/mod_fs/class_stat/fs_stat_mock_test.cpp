@@ -130,6 +130,33 @@ HWTEST_F(FsStatMockTest, FsStatMockTest_GetLocation_002, testing::ext::TestSize.
 }
 
 /**
+ * @tc.name: FsStatMockTest_GetLocation_003
+ * @tc.desc: Test FsStat::GetLocation returns LOCAL when fileInfo_ is null (null deref regression).
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(FsStatMockTest, FsStatMockTest_GetLocation_003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FsStatMockTes-begin FsStatMockTest_GetLocation_003";
+
+    auto entity = std::make_unique<StatEntity>();
+    entity->fileInfo_ = nullptr;
+    FsStat fsStat(std::move(entity));
+
+    auto xattrMock = SysXattrMock::GetMock();
+    EXPECT_CALL(*xattrMock, getxattr(_, _, _, _)).Times(0);
+    EXPECT_CALL(*xattrMock, fgetxattr(_, _, _, _)).Times(0);
+
+    auto location = fsStat.GetLocation();
+
+    testing::Mock::VerifyAndClearExpectations(xattrMock.get());
+    EXPECT_EQ(location, static_cast<int32_t>(LOCAL));
+
+    GTEST_LOG_(INFO) << "FsStatMockTes-end FsStatMockTest_GetLocation_003";
+}
+
+/**
  * @tc.name: FsStatMockTest_GetBlocks_001
  * @tc.desc: Test FsStat::GetBlocks returns the st_blocks snapshot as is.
  * @tc.size: MEDIUM

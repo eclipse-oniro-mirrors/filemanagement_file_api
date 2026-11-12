@@ -18,6 +18,7 @@
 #include <gtest/gtest.h>
 #include <sys/prctl.h>
 
+#include "fs_stat.h"
 #include "ut_file_utils.h"
 
 namespace OHOS::FileManagement::ModuleFileIO::Test {
@@ -101,5 +102,30 @@ HWTEST_F(LstatCoreTest, LstatCoreTest_DoLstat_002, testing::ext::TestSize.Level1
     ASSERT_NE(stat, nullptr);
 
     GTEST_LOG_(INFO) << "LstatCoreTest-end LstatCoreTest_DoLstat_002";
+}
+
+/**
+ * @tc.name: LstatCoreTest_DoLstat_003
+ * @tc.desc: Test DoLstat success then GetLocation does not crash (null deref regression).
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(LstatCoreTest, LstatCoreTest_DoLstat_003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "LstatCoreTest-begin LstatCoreTest_DoLstat_003";
+
+    auto path = testDir + "/LstatCoreTest_DoLstat_003.txt";
+    ASSERT_TRUE(FileUtils::CreateFile(path, "content"));
+
+    auto res = LstatCore::DoLstat(path);
+    ASSERT_TRUE(res.IsSuccess());
+    std::unique_ptr<FsStat> stat(res.GetData().value());
+    ASSERT_NE(stat, nullptr);
+
+    auto location = stat->GetLocation();
+    EXPECT_EQ(location, static_cast<int32_t>(LOCAL));
+
+    GTEST_LOG_(INFO) << "LstatCoreTest-end LstatCoreTest_DoLstat_003";
 }
 } // namespace OHOS::FileManagement::ModuleFileIO::Test
