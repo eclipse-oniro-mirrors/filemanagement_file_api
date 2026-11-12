@@ -142,6 +142,10 @@ int32_t FsStat::GetLocation()
         return ENOMEM;
     }
 
+    if (entity->fileInfo_ == nullptr) {
+        HILOGE("fileInfo is null, return default location LOCAL");
+        return static_cast<int32_t>(LOCAL);
+    }
     ssize_t size = 0;
     if (entity->fileInfo_->isPath) {
         size = getxattr(entity->fileInfo_->path.get(), CLOUD_LOCATION_ATTR.c_str(), value.get(), MAX_ATTR_NAME);

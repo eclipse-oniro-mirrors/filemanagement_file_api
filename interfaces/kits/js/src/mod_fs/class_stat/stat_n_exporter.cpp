@@ -346,6 +346,10 @@ napi_value StatNExporter::GetLocation(napi_env env, napi_callback_info info)
         HILOGE("Failed to get stat entity");
         return nullptr;
     }
+    if (statEntity->fileInfo_ == nullptr) {
+        HILOGE("fileInfo is null, return default location LOCAL");
+        return NVal::CreateInt32(env, static_cast<int32_t>(LOCAL)).val_;
+    }
     std::unique_ptr<char[]> value = CreateUniquePtr<char[]>(MAX_ATTR_NAME);
     if (value == nullptr) {
         HILOGE("Getxattr memory out, errno is %{public}d", errno);
