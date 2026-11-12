@@ -73,7 +73,7 @@ napi_value StreamNExporter::FlushSync(napi_env env, napi_callback_info cbInfo)
     auto fp = GetFilePtr(streamEntity);
     if (fp == nullptr) {
         HILOGE("Failed to get entity of Stream");
-        NError(EIO).ThrowErr(env);
+        NError(EIO, "File descriptor in bad state").ThrowErr(env);
         return nullptr;
     }
     FileFsTrace traceFflush("fflush");
@@ -104,14 +104,14 @@ napi_value StreamNExporter::Flush(napi_env env, napi_callback_info cbInfo)
     auto fp = GetFilePtr(streamEntity);
     if (fp == nullptr) {
         HILOGE("Failed to get entity of Stream");
-        NError(EIO).ThrowErr(env);
+        NError(EIO, "File descriptor in bad state").ThrowErr(env);
         return nullptr;
     }
 
     auto cbExec = [fp]() -> NError {
         if (!fp) {
             HILOGE("Stream has been closed in flush cbExec possibly");
-            return NError(EIO);
+            return NError(EIO, "File descriptor in bad state");
         }
         int ret = fflush(fp.get());
         if (ret < 0) {
@@ -154,7 +154,7 @@ napi_value StreamNExporter::ReadSync(napi_env env, napi_callback_info cbInfo)
     auto fp = GetFilePtr(streamEntity);
     if (fp == nullptr) {
         HILOGE("Failed to get entity of Stream");
-        NError(EIO).ThrowErr(env);
+        NError(EIO, "File descriptor in bad state").ThrowErr(env);
         return nullptr;
     }
 
@@ -196,7 +196,7 @@ napi_value StreamNExporter::CloseSync(napi_env env, napi_callback_info cbInfo)
     auto streamEntity = NClass::GetEntityOf<StreamEntity>(env, funcArg.GetThisVar());
     if (!streamEntity) {
         HILOGE("Failed to get entity of Stream, may closed twice");
-        NError(EIO).ThrowErr(env);
+        NError(EIO, "File descriptor in bad state").ThrowErr(env);
         return nullptr;
     }
     {
@@ -224,7 +224,7 @@ napi_value StreamNExporter::WriteSync(napi_env env, napi_callback_info cbInfo)
     auto fp = GetFilePtr(streamEntity);
     if (fp == nullptr) {
         HILOGE("Failed to get entity of Stream");
-        NError(EIO).ThrowErr(env);
+        NError(EIO, "File descriptor in bad state").ThrowErr(env);
         return nullptr;
     }
 
@@ -275,7 +275,7 @@ static napi_value WriteExec(napi_env env, NFuncArg &funcArg, shared_ptr<FILE> fp
     auto cbExec = [arg, buf = buf, len = len, fp, offset = offset]() -> NError {
         if (!fp.get()) {
             HILOGE("Stream has been closed in write cbExec possibly");
-            return NError(EIO);
+            return NError(EIO, "File descriptor in bad state");
         }
         if (offset >= 0) {
             int ret = fseek(fp.get(), static_cast<long>(offset), SEEK_SET);
@@ -326,7 +326,7 @@ napi_value StreamNExporter::Write(napi_env env, napi_callback_info cbInfo)
     auto fp = GetFilePtr(streamEntity);
     if (fp == nullptr) {
         HILOGE("Failed to get entity of Stream");
-        NError(EIO).ThrowErr(env);
+        NError(EIO, "File descriptor in bad state").ThrowErr(env);
         return nullptr;
     }
     return WriteExec(env, funcArg, fp);
@@ -351,7 +351,7 @@ static napi_value ReadExec(napi_env env, NFuncArg &funcArg, shared_ptr<FILE> fp)
     auto cbExec = [arg, buf = buf, len = len, fp, offset = offset]() -> NError {
         if (!fp.get()) {
             HILOGE("Stream has been closed in read cbExec possibly");
-            return NError(EIO);
+            return NError(EIO, "File descriptor in bad state");
         }
         if (offset >= 0) {
             if (fseek(fp.get(), static_cast<long>(offset), SEEK_SET) < 0) {
@@ -403,7 +403,7 @@ napi_value StreamNExporter::Read(napi_env env, napi_callback_info cbInfo)
     auto fp = GetFilePtr(streamEntity);
     if (fp == nullptr) {
         HILOGE("Failed to get entity of Stream");
-        NError(EIO).ThrowErr(env);
+        NError(EIO, "File descriptor in bad state").ThrowErr(env);
         return nullptr;
     }
     return ReadExec(env, funcArg, fp);
@@ -420,7 +420,7 @@ napi_value StreamNExporter::Close(napi_env env, napi_callback_info cbInfo)
     auto streamEntity = NClass::GetEntityOf<StreamEntity>(env, funcArg.GetThisVar());
     if (!streamEntity) {
         HILOGE("Failed to get entity of Stream, may closed twice");
-        NError(EIO).ThrowErr(env);
+        NError(EIO, "File descriptor in bad state").ThrowErr(env);
         return nullptr;
     }
     StreamEntity* ret = nullptr;
@@ -470,7 +470,7 @@ napi_value StreamNExporter::Seek(napi_env env, napi_callback_info cbInfo)
     auto fp = GetFilePtr(streamEntity);
     if (fp == nullptr) {
         HILOGE("Failed to get entity of Stream");
-        NError(EIO).ThrowErr(env);
+        NError(EIO, "File descriptor in bad state").ThrowErr(env);
         return nullptr;
     }
     auto [succGetOffset, offset] = NVal(env, funcArg[NARG_POS::FIRST]).ToInt64();

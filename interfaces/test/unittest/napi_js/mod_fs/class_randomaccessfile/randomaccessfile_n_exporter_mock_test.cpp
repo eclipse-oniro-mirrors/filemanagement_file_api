@@ -174,7 +174,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Cl
     auto res = RandomAccessFileNExporter::CloseSync(env, mInfo);
 
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error");
+    libnMock->VerifyAndClearErr(13900005, "I/O error. File descriptor in bad state");
     EXPECT_EQ(res, nullptr);
 
     GTEST_LOG_(INFO) << "RandomAccessFileNExporterMockTest-end RandomAccessFileNExporterMockTest_CloseSync_003";
@@ -229,7 +229,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Cl
     auto res = RandomAccessFileNExporter::CloseSync(env, mInfo);
 
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error");
+    libnMock->VerifyAndClearErr(13900005, "I/O error. File descriptor in bad state");
     EXPECT_EQ(res, nullptr);
 
     GTEST_LOG_(INFO) << "RandomAccessFileNExporterMockTest-end RandomAccessFileNExporterMockTest_CloseSync_005";
@@ -263,7 +263,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Cl
 
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
     testing::Mock::VerifyAndClearExpectations(fdsanMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error");
+    libnMock->VerifyAndClearErr(13900005, "I/O error. File descriptor in bad state");
     EXPECT_EQ(res, nullptr);
 
     GTEST_LOG_(INFO) << "RandomAccessFileNExporterMockTest-end RandomAccessFileNExporterMockTest_CloseSync_006";
@@ -299,7 +299,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Cl
 
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
     testing::Mock::VerifyAndClearExpectations(fdsanMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error");
+    libnMock->VerifyAndClearErr(13900005, "I/O error. File descriptor in bad state");
     EXPECT_EQ(res, nullptr);
 
     GTEST_LOG_(INFO) << "RandomAccessFileNExporterMockTest-end RandomAccessFileNExporterMockTest_CloseSync_007";

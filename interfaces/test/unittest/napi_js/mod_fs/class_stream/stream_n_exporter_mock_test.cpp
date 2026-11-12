@@ -172,7 +172,7 @@ HWTEST_F(StreamNExporterMockTest, StreamNExporterMockTest_CloseSync_002, testing
     auto res = StreamNExporter::CloseSync(env, mInfo);
 
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error");
+    libnMock->VerifyAndClearErr(13900005, "I/O error. File descriptor in bad state");
     EXPECT_EQ(res, nullptr);
 
     GTEST_LOG_(INFO) << "StreamNExporterMockTest-end StreamNExporterMockTest_CloseSync_002";
@@ -367,7 +367,7 @@ HWTEST_F(StreamNExporterMockTest, StreamNExporterMockTest_FlushSync_003, testing
     auto res = StreamNExporter::FlushSync(env, mInfo);
 
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error");
+    libnMock->VerifyAndClearErr(13900005, "I/O error. File descriptor in bad state");
     EXPECT_EQ(res, nullptr);
 
     GTEST_LOG_(INFO) << "StreamNExporterMockTest-end StreamNExporterMockTest_FlushSync_003";

@@ -115,7 +115,7 @@ HWTEST_F(FsRandomAccessFileTest, FsRandomAccessFileTest_GetFD_002, testing::ext:
     EXPECT_FALSE(result.IsSuccess());
     auto err = result.GetError();
     EXPECT_EQ(err.GetErrNo(), 13900005);
-    EXPECT_EQ(err.GetErrMsg(), "I/O error");
+    EXPECT_EQ(err.GetErrMsg(), "File descriptor in bad state");
 
     GTEST_LOG_(INFO) << "FsRandomAccessFileTest-end FsRandomAccessFileTest_GetFD_002";
 }
@@ -165,7 +165,7 @@ HWTEST_F(FsRandomAccessFileTest, FsRandomAccessFileTest_GetFPointer_002, testing
     EXPECT_FALSE(result.IsSuccess());
     auto err = result.GetError();
     EXPECT_EQ(err.GetErrNo(), 13900005);
-    EXPECT_EQ(err.GetErrMsg(), "I/O error");
+    EXPECT_EQ(err.GetErrMsg(), "File descriptor in bad state");
 
     GTEST_LOG_(INFO) << "FsRandomAccessFileTest-end FsRandomAccessFileTest_GetFPointer_002";
 }
@@ -213,7 +213,7 @@ HWTEST_F(FsRandomAccessFileTest, FsRandomAccessFileTest_SetFilePointerSync_002, 
     EXPECT_FALSE(result.IsSuccess());
     auto err = result.GetError();
     EXPECT_EQ(err.GetErrNo(), 13900005);
-    EXPECT_EQ(err.GetErrMsg(), "I/O error");
+    EXPECT_EQ(err.GetErrMsg(), "File descriptor in bad state");
 
     GTEST_LOG_(INFO) << "FsRandomAccessFileTest-end FsRandomAccessFileTest_SetFilePointerSync_002";
 }
@@ -240,7 +240,7 @@ HWTEST_F(FsRandomAccessFileTest, FsRandomAccessFileTest_ReadSync_001, testing::e
     EXPECT_FALSE(result.IsSuccess());
     auto err = result.GetError();
     EXPECT_EQ(err.GetErrNo(), 13900005);
-    EXPECT_EQ(err.GetErrMsg(), "I/O error");
+    EXPECT_EQ(err.GetErrMsg(), "File descriptor in bad state");
 
     GTEST_LOG_(INFO) << "FsRandomAccessFileTest-end FsRandomAccessFileTest_ReadSync_001";
 }
@@ -327,7 +327,7 @@ HWTEST_F(FsRandomAccessFileTest, FsRandomAccessFileTest_WriteSync_001, testing::
     EXPECT_FALSE(result.IsSuccess());
     auto err = result.GetError();
     EXPECT_EQ(err.GetErrNo(), 13900005);
-    EXPECT_EQ(err.GetErrMsg(), "I/O error");
+    EXPECT_EQ(err.GetErrMsg(), "File descriptor in bad state");
 
     GTEST_LOG_(INFO) << "FsRandomAccessFileTest-end FsRandomAccessFileTest_WriteSync_001";
 }
@@ -355,7 +355,7 @@ HWTEST_F(FsRandomAccessFileTest, FsRandomAccessFileTest_WriteSync_002, testing::
     EXPECT_FALSE(result.IsSuccess());
     auto err = result.GetError();
     EXPECT_EQ(err.GetErrNo(), 13900005);
-    EXPECT_EQ(err.GetErrMsg(), "I/O error");
+    EXPECT_EQ(err.GetErrMsg(), "File descriptor in bad state");
 
     GTEST_LOG_(INFO) << "FsRandomAccessFileTest-end FsRandomAccessFileTest_WriteSync_002";
 }
@@ -499,7 +499,7 @@ HWTEST_F(FsRandomAccessFileTest, FsRandomAccessFileTest_CloseSync_001, testing::
     EXPECT_FALSE(result.IsSuccess());
     auto err = result.GetError();
     EXPECT_EQ(err.GetErrNo(), 13900005);
-    EXPECT_EQ(err.GetErrMsg(), "I/O error");
+    EXPECT_EQ(err.GetErrMsg(), "File descriptor in bad state");
 
     GTEST_LOG_(INFO) << "FsRandomAccessFileTest-end FsRandomAccessFileTest_CloseSync_001";
 }
