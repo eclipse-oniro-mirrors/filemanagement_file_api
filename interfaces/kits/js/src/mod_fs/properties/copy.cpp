@@ -379,8 +379,12 @@ int32_t Copy::ExecCopy(std::shared_ptr<FileInfos> infos, std::shared_ptr<JsCallb
         };
     }
     if (infos->taskSignal != nullptr) {
-        infos->taskSignal->MarkDfsTask();
         infos->taskSignal->SetCopyTaskUri(infos->srcUri, infos->destUri, infos->srcPath);
+        infos->taskSignal->MarkDfsTask();
+        if (infos->taskSignal->IsCanceled()) {
+            LOGE("Copy task was canceled before start.");
+            return FileManagement::LibN::DFS_CANCEL_SUCCESS;
+        }
     }
     LOGI("Copy begin");
     auto result = Storage::DistributedFile::FileCopyManager::GetInstance().Copy(infos->srcUri, infos->destUri,
