@@ -51,6 +51,8 @@ bool NClass::SaveClass(napi_env env, string className, napi_value exClass)
         return true;
     }
 
+    bool mapEmpty = nClass.exClassMap.empty();
+
     napi_ref constructor;
     napi_status res = napi_create_reference(env, exClass, 1, &constructor);
     if (res == napi_ok) {
@@ -59,12 +61,18 @@ bool NClass::SaveClass(napi_env env, string className, napi_value exClass)
         HILOGE("INNER BUG. Cannot ref class constructor %{public}s because of %{public}d", className.c_str(), res);
     }
 
-    if (!nClass.addCleanHook) {
-        napi_status status = napi_add_env_cleanup_hook(env, CleanClass, env);
-        if (status != napi_ok) {
-            HILOGE("INNER BUG. Cleanup_hook registation has failed because of %{public}d", res);
+    if (nClass.env_ != env) {
+        if (mapEmpty) {
+            lock_guard<std::mutex> wrapLock(nClass.wrapLock);
+            nClass.wrapReleased = false;
         } else {
-            nClass.addCleanHook = true;
+            HILOGW("Cleanup_hook registers on a new env while exClassMap is not empty");
+        }
+        napi_status status = napi_add_env_cleanup_hook(env, CleanClass, &nClass);
+        if (status != napi_ok) {
+            HILOGE("INNER BUG. Cleanup_hook registration has failed because of %{public}d", status);
+        } else {
+            nClass.env_ = env;
         }
     }
     return res == napi_ok;
@@ -72,21 +80,27 @@ bool NClass::SaveClass(napi_env env, string className, napi_value exClass)
 
 void NClass::CleanClass(void *arg)
 {
-    napi_env env = reinterpret_cast<napi_env>(arg);
-    NClass &nClass = NClass::GetInstance();
-    lock_guard<std::mutex> lock(nClass.exClassMapLock);
+    auto *nClass = static_cast<NClass *>(arg);
+    if (nClass == nullptr) {
+        return;
+    }
+    napi_env env = nClass->env_;
+    if (env == nullptr) {
+        return;
+    }
+    lock_guard<std::mutex> lock(nClass->exClassMapLock);
     {
-        lock_guard<std::mutex> wrapLock(nClass.wrapLock);
-        nClass.wrapReleased = true;
+        lock_guard<std::mutex> wrapLock(nClass->wrapLock);
+        nClass->wrapReleased = true;
     }
     napi_status res;
-    for (auto it = nClass.exClassMap.begin(); it != nClass.exClassMap.end(); ++it) {
+    for (auto it = nClass->exClassMap.begin(); it != nClass->exClassMap.end(); ++it) {
         res = napi_delete_reference(env, it->second);
         if (res != napi_ok) {
             HILOGE("Cannot del ref class constructor %{public}s because of %{public}d", it->first.c_str(), res);
         }
     }
-    nClass.exClassMap.clear();
+    nClass->exClassMap.clear();
 }
 
 napi_value NClass::InstantiateClass(napi_env env, const string& className, const vector<napi_value>& args)

@@ -86,11 +86,11 @@ public:
     }
 
 private:
-    NClass() : wrapReleased(false), addCleanHook(false) {};
+    NClass() : wrapReleased(false), env_(nullptr) {};
     ~NClass() = default;
     std::map<std::string, napi_ref> exClassMap;
     std::mutex exClassMapLock;
-    bool addCleanHook;
+    napi_env env_ { nullptr };
 };
 } // namespace LibN
 } // namespace FileManagement
