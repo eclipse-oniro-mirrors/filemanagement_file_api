@@ -182,8 +182,8 @@ void UringReadEngine::ReleaseSlot(RingSlot &slot)
     {
         std::lock_guard<std::mutex> lock(poolMutex_);
         slot.inUse = false;
+        poolCv_.notify_all();
     }
-    poolCv_.notify_all();
 }
 
 void UringReadEngine::RebuildSlot(RingSlot &slot)
