@@ -41,19 +41,19 @@ void RegisterManager(OH_SwapfsManager *manager)
 
 class ApiCallGuard final {
 public:
-    explicit ApiCallGuard(OH_SwapfsManager *manager) : manager_(manager)
+    explicit ApiCallGuard(OH_SwapfsManager *manager) : manager_(nullptr)
     {
-        if (manager_ == nullptr) {
+        std::lock_guard<std::mutex> lock(g_managerStateMutex);
+        if (manager == nullptr) {
             status_ = SWAPFS_E_INVAL;
             return;
         }
-        std::lock_guard<std::mutex> lock(g_managerStateMutex);
-        auto iter = g_managerStates.find(manager_);
+        auto iter = g_managerStates.find(manager);
         if (iter == g_managerStates.end() || iter->second.destroying) {
             status_ = SWAPFS_E_SHUTTING_DOWN;
-            manager_ = nullptr;
             return;
         }
+        manager_ = manager;
         ++iter->second.activeCalls;
     }
 
