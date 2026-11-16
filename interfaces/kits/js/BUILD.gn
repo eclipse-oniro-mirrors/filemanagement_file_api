@@ -180,6 +180,11 @@ ohos_shared_library("fs") {
   }
   if (use_linux) {
     defines = [ "PREVIEW_LINUX" ]
+    sources += [
+      "src/mod_fs/properties/lseek.cpp",
+      "src/mod_fs/properties/read_text.cpp",
+      "src/mod_fs/properties/symlink.cpp",
+    ]
   }
 
   external_deps = [
