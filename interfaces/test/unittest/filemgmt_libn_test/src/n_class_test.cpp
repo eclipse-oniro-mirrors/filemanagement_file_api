@@ -207,17 +207,26 @@ HWTEST_F(NClassTest, NClassTest_CleanClass_001, testing::ext::TestSize.Level1)
     napi_value classValue = reinterpret_cast<napi_value>(0x1234);
     napi_ref mockReference = reinterpret_cast<napi_ref>(0x2345);
     auto napiMock = NapiMock::GetMock();
+
+    // Reset the shared thread_local instance left by earlier cases, so this case does not
+    // depend on execution order (--gtest_filter / --gtest_shuffle safe)
+    EXPECT_CALL(*napiMock, napi_delete_reference(testing::_, testing::_))
+        .WillRepeatedly(testing::Return(napi_ok));
+    NClass::CleanClass(&NClass::GetInstance());
+    testing::Mock::VerifyAndClearExpectations(napiMock.get());
+
     EXPECT_CALL(*napiMock, napi_create_reference(testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::DoAll(testing::SetArgPointee<3>(mockReference), testing::Return(napi_ok)));
-
-    // Cases share one thread_local instance: one ref left by NClassTest_SaveClass_001 plus this one
-    EXPECT_CALL(*napiMock, napi_delete_reference(testing::_, testing::_))
-        .Times(2)
-        .WillRepeatedly(testing::Return(napi_ok));
+    // env was reset by the cleanup above, so SaveClass re-registers the hook on this env
+    EXPECT_CALL(*napiMock, napi_add_env_cleanup_hook(env, testing::_, testing::_))
+        .WillOnce(testing::Return(napi_ok));
 
     // Do testing
     bool succ = NClass::SaveClass(env, className, classValue);
     EXPECT_TRUE(succ);
+    EXPECT_CALL(*napiMock, napi_delete_reference(testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Return(napi_ok));
     NClass::CleanClass(&NClass::GetInstance());
 
     // Verify results
@@ -670,7 +679,8 @@ HWTEST_F(NClassTest, NClassTest_SaveClass_HookArgUnique, testing::ext::TestSize.
 /**
  * @tc.name: NClassTest_CleanClass_ResetForNewEnv
  * @tc.desc: Test function of NClass interface for SUCCESS when a new env re-registers the hook and
- *           wrapReleased is reset after CleanClass.
+ *           wrapReleased is reset after CleanClass, including a new env reusing the torn-down
+ *           env's address.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -712,6 +722,23 @@ HWTEST_F(NClassTest, NClassTest_CleanClass_ResetForNewEnv, testing::ext::TestSiz
     EXPECT_CALL(*napiMock, napi_add_env_cleanup_hook(secondEnv, testing::_, testing::_))
         .WillOnce(testing::Return(napi_ok));
     succ = NClass::SaveClass(secondEnv, "NClassTest_CleanClass_ResetForNewEnv_2", classValue);
+    testing::Mock::VerifyAndClearExpectations(napiMock.get());
+    EXPECT_TRUE(succ);
+    EXPECT_FALSE(NClass::GetInstance().wrapReleased);
+
+    // Tear the second env down, then simulate a new env allocated on the same address: the stale
+    // recorded env (reset by CleanClass) must not skip re-registration nor block the reset
+    EXPECT_CALL(*napiMock, napi_delete_reference(testing::_, testing::_))
+        .WillOnce(testing::Return(napi_ok));
+    NClass::CleanClass(&NClass::GetInstance());
+    testing::Mock::VerifyAndClearExpectations(napiMock.get());
+    EXPECT_TRUE(NClass::GetInstance().wrapReleased);
+
+    EXPECT_CALL(*napiMock, napi_create_reference(testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<3>(mockReference), testing::Return(napi_ok)));
+    EXPECT_CALL(*napiMock, napi_add_env_cleanup_hook(secondEnv, testing::_, testing::_))
+        .WillOnce(testing::Return(napi_ok));
+    succ = NClass::SaveClass(secondEnv, "NClassTest_CleanClass_ResetForNewEnv_3", classValue);
     testing::Mock::VerifyAndClearExpectations(napiMock.get());
     EXPECT_TRUE(succ);
     EXPECT_FALSE(NClass::GetInstance().wrapReleased);
@@ -760,7 +787,7 @@ HWTEST_F(NClassTest, NClassTest_SaveClass_HookFailRetry, testing::ext::TestSize.
     NClass::CleanClass(&NClass::GetInstance());
     testing::Mock::VerifyAndClearExpectations(napiMock.get());
 
-    // First SaveClass: hook registration fails, env_ keeps the old value for retry
+    // First SaveClass: hook registration fails, the recorded env keeps the old value for retry
     EXPECT_CALL(*napiMock, napi_create_reference(testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::DoAll(testing::SetArgPointee<3>(mockReference), testing::Return(napi_ok)));
     EXPECT_CALL(*napiMock, napi_add_env_cleanup_hook(env, testing::_, testing::_))
@@ -799,7 +826,7 @@ HWTEST_F(NClassTest, NClassTest_CleanClass_NullEnv, testing::ext::TestSize.Level
 {
     GTEST_LOG_(INFO) << "NClassTest-begin NClassTest_CleanClass_NullEnv";
 
-    // A fresh thread owns a fresh thread_local NClass instance whose env_ is nullptr;
+    // A fresh thread owns a fresh thread_local NClass instance whose env is nullptr;
     // the deep path would flip wrapReleased to true before anything else
     bool wrapReleasedObserved = true;
     std::thread freshThread([&wrapReleasedObserved] {
