@@ -161,6 +161,7 @@ ohos_unittest("ani_file_fs_mock_test") {
   ]
 
   sources = [
+    "${file_api_path}/interfaces/test/unittest/common_mock/datashare_mock.cpp",
     "${file_api_path}/interfaces/test/unittest/common_mock/dfs_mock.cpp",
     "${file_api_path}/interfaces/test/unittest/common_mock/eventfd_mock.cpp",
     "${file_api_path}/interfaces/test/unittest/common_mock/fdsan_mock.cpp",

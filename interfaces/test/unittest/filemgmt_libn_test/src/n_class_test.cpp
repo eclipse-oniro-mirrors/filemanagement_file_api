@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (C) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +16,7 @@
 #include "n_class.h"
 
 #include <string>
+#include <thread>
 #include <vector>
 
 #include <gmock/gmock.h>
@@ -147,7 +148,7 @@ HWTEST_F(NClassTest, NClassTest_SaveClass_001, testing::ext::TestSize.Level1)
     EXPECT_CALL(*napiMock, napi_create_reference(testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::DoAll(testing::SetArgPointee<3>(mockReference), testing::Return(napi_ok)));
 
-    EXPECT_CALL(*napiMock, napi_add_env_cleanup_hook(testing::_, testing::_, testing::_))
+    EXPECT_CALL(*napiMock, napi_add_env_cleanup_hook(testing::_, testing::_, testing::Ne(env)))
         .WillOnce(testing::Return(napi_ok));
 
     // Do testing
@@ -200,13 +201,33 @@ HWTEST_F(NClassTest, NClassTest_CleanClass_001, testing::ext::TestSize.Level1)
     GTEST_LOG_(INFO) << "NClassTest-begin NClassTest_CleanClass_001";
     // Prepare test parameters
     napi_env env = reinterpret_cast<napi_env>(0x1000);
+    string className = "NClassTest_CleanClass_001";
 
     // Set mock behaviors
+    napi_value classValue = reinterpret_cast<napi_value>(0x1234);
+    napi_ref mockReference = reinterpret_cast<napi_ref>(0x2345);
     auto napiMock = NapiMock::GetMock();
-    EXPECT_CALL(*napiMock, napi_delete_reference(testing::_, testing::_)).WillOnce(testing::Return(napi_ok));
+
+    // Reset the shared thread_local instance left by earlier cases, so this case does not
+    // depend on execution order (--gtest_filter / --gtest_shuffle safe)
+    EXPECT_CALL(*napiMock, napi_delete_reference(testing::_, testing::_))
+        .WillRepeatedly(testing::Return(napi_ok));
+    NClass::CleanClass(&NClass::GetInstance());
+    testing::Mock::VerifyAndClearExpectations(napiMock.get());
+
+    EXPECT_CALL(*napiMock, napi_create_reference(testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<3>(mockReference), testing::Return(napi_ok)));
+    // env was reset by the cleanup above, so SaveClass re-registers the hook on this env
+    EXPECT_CALL(*napiMock, napi_add_env_cleanup_hook(env, testing::_, testing::_))
+        .WillOnce(testing::Return(napi_ok));
 
     // Do testing
-    NClass::CleanClass(env);
+    bool succ = NClass::SaveClass(env, className, classValue);
+    EXPECT_TRUE(succ);
+    EXPECT_CALL(*napiMock, napi_delete_reference(testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Return(napi_ok));
+    NClass::CleanClass(&NClass::GetInstance());
 
     // Verify results
     testing::Mock::VerifyAndClearExpectations(napiMock.get());
@@ -611,6 +632,213 @@ HWTEST_F(NClassTest, NClassTest_RemoveEntityOfFinal_004, testing::ext::TestSize.
     testing::Mock::VerifyAndClearExpectations(napiMock.get());
     EXPECT_EQ(entity, nullptr);
     GTEST_LOG_(INFO) << "NClassTest-end NClassTest_RemoveEntityOfFinal_004";
+}
+
+/**
+ * @tc.name: NClassTest_SaveClass_HookArgUnique
+ * @tc.desc: Test function of NClass::SaveClass interface for SUCCESS when cleanup hook arg is unique.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(NClassTest, NClassTest_SaveClass_HookArgUnique, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NClassTest-begin NClassTest_SaveClass_HookArgUnique";
+    // Prepare test parameters
+    napi_env env = reinterpret_cast<napi_env>(0x2000);
+    string className = "NClassTest_SaveClass_HookArgUnique";
+
+    // Set mock behaviors
+    napi_value classValue = reinterpret_cast<napi_value>(0x1234);
+    napi_ref mockReference = reinterpret_cast<napi_ref>(0x2345);
+    auto napiMock = NapiMock::GetMock();
+
+    // Reset the shared thread_local instance left by earlier cases
+    EXPECT_CALL(*napiMock, napi_delete_reference(testing::_, testing::_))
+        .WillRepeatedly(testing::Return(napi_ok));
+    NClass::CleanClass(&NClass::GetInstance());
+    testing::Mock::VerifyAndClearExpectations(napiMock.get());
+
+    EXPECT_CALL(*napiMock, napi_create_reference(testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<3>(mockReference), testing::Return(napi_ok)));
+
+    EXPECT_CALL(*napiMock,
+        napi_add_env_cleanup_hook(testing::_, testing::_,
+            testing::AllOf(testing::Ne(env), testing::Eq(static_cast<void *>(&NClass::GetInstance())))))
+        .WillOnce(testing::Return(napi_ok));
+
+    // Do testing
+    bool succ = NClass::SaveClass(env, className, classValue);
+
+    // Verify results
+    testing::Mock::VerifyAndClearExpectations(napiMock.get());
+    EXPECT_TRUE(succ);
+    GTEST_LOG_(INFO) << "NClassTest-end NClassTest_SaveClass_HookArgUnique";
+}
+
+/**
+ * @tc.name: NClassTest_CleanClass_ResetForNewEnv
+ * @tc.desc: Test function of NClass interface for SUCCESS when a new env re-registers the hook and
+ *           wrapReleased is reset after CleanClass, including a new env reusing the torn-down
+ *           env's address.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(NClassTest, NClassTest_CleanClass_ResetForNewEnv, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NClassTest-begin NClassTest_CleanClass_ResetForNewEnv";
+    // Prepare test parameters
+    napi_env firstEnv = reinterpret_cast<napi_env>(0x2100);
+    napi_env secondEnv = reinterpret_cast<napi_env>(0x2200);
+    napi_value classValue = reinterpret_cast<napi_value>(0x1234);
+    napi_ref mockReference = reinterpret_cast<napi_ref>(0x2345);
+    auto napiMock = NapiMock::GetMock();
+
+    // Reset the shared thread_local instance left by earlier cases
+    EXPECT_CALL(*napiMock, napi_delete_reference(testing::_, testing::_))
+        .WillRepeatedly(testing::Return(napi_ok));
+    NClass::CleanClass(&NClass::GetInstance());
+    testing::Mock::VerifyAndClearExpectations(napiMock.get());
+
+    // Register on the first env and tear it down via CleanClass
+    EXPECT_CALL(*napiMock, napi_create_reference(testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<3>(mockReference), testing::Return(napi_ok)));
+    EXPECT_CALL(*napiMock, napi_add_env_cleanup_hook(firstEnv, testing::_, testing::_))
+        .WillOnce(testing::Return(napi_ok));
+    bool succ = NClass::SaveClass(firstEnv, "NClassTest_CleanClass_ResetForNewEnv_1", classValue);
+    testing::Mock::VerifyAndClearExpectations(napiMock.get());
+    EXPECT_TRUE(succ);
+
+    EXPECT_CALL(*napiMock, napi_delete_reference(testing::_, testing::_))
+        .WillOnce(testing::Return(napi_ok));
+    NClass::CleanClass(&NClass::GetInstance());
+    testing::Mock::VerifyAndClearExpectations(napiMock.get());
+    EXPECT_TRUE(NClass::GetInstance().wrapReleased);
+
+    // SaveClass on the new env re-registers the hook once per env and resets wrapReleased
+    EXPECT_CALL(*napiMock, napi_create_reference(testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<3>(mockReference), testing::Return(napi_ok)));
+    EXPECT_CALL(*napiMock, napi_add_env_cleanup_hook(secondEnv, testing::_, testing::_))
+        .WillOnce(testing::Return(napi_ok));
+    succ = NClass::SaveClass(secondEnv, "NClassTest_CleanClass_ResetForNewEnv_2", classValue);
+    testing::Mock::VerifyAndClearExpectations(napiMock.get());
+    EXPECT_TRUE(succ);
+    EXPECT_FALSE(NClass::GetInstance().wrapReleased);
+
+    // Tear the second env down, then simulate a new env allocated on the same address: the stale
+    // recorded env (reset by CleanClass) must not skip re-registration nor block the reset
+    EXPECT_CALL(*napiMock, napi_delete_reference(testing::_, testing::_))
+        .WillOnce(testing::Return(napi_ok));
+    NClass::CleanClass(&NClass::GetInstance());
+    testing::Mock::VerifyAndClearExpectations(napiMock.get());
+    EXPECT_TRUE(NClass::GetInstance().wrapReleased);
+
+    EXPECT_CALL(*napiMock, napi_create_reference(testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<3>(mockReference), testing::Return(napi_ok)));
+    EXPECT_CALL(*napiMock, napi_add_env_cleanup_hook(secondEnv, testing::_, testing::_))
+        .WillOnce(testing::Return(napi_ok));
+    succ = NClass::SaveClass(secondEnv, "NClassTest_CleanClass_ResetForNewEnv_3", classValue);
+    testing::Mock::VerifyAndClearExpectations(napiMock.get());
+    EXPECT_TRUE(succ);
+    EXPECT_FALSE(NClass::GetInstance().wrapReleased);
+    GTEST_LOG_(INFO) << "NClassTest-end NClassTest_CleanClass_ResetForNewEnv";
+}
+
+/**
+ * @tc.name: NClassTest_CleanClass_NullArg
+ * @tc.desc: Test function of NClass::CleanClass interface for SUCCESS when arg is nullptr.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(NClassTest, NClassTest_CleanClass_NullArg, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NClassTest-begin NClassTest_CleanClass_NullArg";
+
+    // Do testing
+    NClass::CleanClass(nullptr);
+
+    // Verify results: safe return without any napi call or crash
+    SUCCEED();
+    GTEST_LOG_(INFO) << "NClassTest-end NClassTest_CleanClass_NullArg";
+}
+
+/**
+ * @tc.name: NClassTest_SaveClass_HookFailRetry
+ * @tc.desc: Test function of NClass::SaveClass interface for SUCCESS when cleanup hook registration
+ *           fails once and is retried on the next SaveClass with the same env.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(NClassTest, NClassTest_SaveClass_HookFailRetry, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NClassTest-begin NClassTest_SaveClass_HookFailRetry";
+    // Prepare test parameters
+    napi_env env = reinterpret_cast<napi_env>(0x2300);
+    napi_value classValue = reinterpret_cast<napi_value>(0x1234);
+    napi_ref mockReference = reinterpret_cast<napi_ref>(0x2345);
+    auto napiMock = NapiMock::GetMock();
+
+    // Reset the shared thread_local instance left by earlier cases
+    EXPECT_CALL(*napiMock, napi_delete_reference(testing::_, testing::_))
+        .WillRepeatedly(testing::Return(napi_ok));
+    NClass::CleanClass(&NClass::GetInstance());
+    testing::Mock::VerifyAndClearExpectations(napiMock.get());
+
+    // First SaveClass: hook registration fails, the recorded env keeps the old value for retry
+    EXPECT_CALL(*napiMock, napi_create_reference(testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<3>(mockReference), testing::Return(napi_ok)));
+    EXPECT_CALL(*napiMock, napi_add_env_cleanup_hook(env, testing::_, testing::_))
+        .WillOnce(testing::Return(napi_generic_failure));
+    bool succ = NClass::SaveClass(env, "NClassTest_SaveClass_HookFailRetry_1", classValue);
+    testing::Mock::VerifyAndClearExpectations(napiMock.get());
+    EXPECT_TRUE(succ);
+
+    // Second SaveClass with the same env: registration is retried and succeeds
+    EXPECT_CALL(*napiMock, napi_create_reference(testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<3>(mockReference), testing::Return(napi_ok)));
+    EXPECT_CALL(*napiMock, napi_add_env_cleanup_hook(env, testing::_, testing::_))
+        .WillOnce(testing::Return(napi_ok));
+    succ = NClass::SaveClass(env, "NClassTest_SaveClass_HookFailRetry_2", classValue);
+    testing::Mock::VerifyAndClearExpectations(napiMock.get());
+    EXPECT_TRUE(succ);
+
+    // Third SaveClass with the same env: no more registration once it has succeeded
+    EXPECT_CALL(*napiMock, napi_create_reference(testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<3>(mockReference), testing::Return(napi_ok)));
+    EXPECT_CALL(*napiMock, napi_add_env_cleanup_hook(testing::_, testing::_, testing::_)).Times(0);
+    succ = NClass::SaveClass(env, "NClassTest_SaveClass_HookFailRetry_3", classValue);
+    testing::Mock::VerifyAndClearExpectations(napiMock.get());
+    EXPECT_TRUE(succ);
+    GTEST_LOG_(INFO) << "NClassTest-end NClassTest_SaveClass_HookFailRetry";
+}
+
+/**
+ * @tc.name: NClassTest_CleanClass_NullEnv
+ * @tc.desc: Test function of NClass::CleanClass interface for SUCCESS when the instance has no env recorded.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(NClassTest, NClassTest_CleanClass_NullEnv, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NClassTest-begin NClassTest_CleanClass_NullEnv";
+
+    // A fresh thread owns a fresh thread_local NClass instance whose env is nullptr;
+    // the deep path would flip wrapReleased to true before anything else
+    bool wrapReleasedObserved = true;
+    std::thread freshThread([&wrapReleasedObserved] {
+        NClass &nClass = NClass::GetInstance();
+        NClass::CleanClass(&nClass);
+        wrapReleasedObserved = nClass.wrapReleased;
+    });
+    freshThread.join();
+
+    // Early return on null env keeps wrapReleased false, without crash or hang
+    EXPECT_FALSE(wrapReleasedObserved);
+    GTEST_LOG_(INFO) << "NClassTest-end NClassTest_CleanClass_NullEnv";
 }
 
 } // namespace Test

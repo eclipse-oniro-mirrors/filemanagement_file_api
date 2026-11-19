@@ -51,6 +51,10 @@ bool NClass::SaveClass(napi_env env, string className, napi_value exClass)
         return true;
     }
 
+    // Snapshot taken BEFORE the insert below: the class saved by this call makes the map non-empty
+    // from here on, so only this snapshot can tell whether the previous lifecycle left classes behind.
+    bool mapEmpty = nClass.exClassMap.empty();
+
     napi_ref constructor;
     napi_status res = napi_create_reference(env, exClass, 1, &constructor);
     if (res == napi_ok) {
@@ -59,12 +63,25 @@ bool NClass::SaveClass(napi_env env, string className, napi_value exClass)
         HILOGE("INNER BUG. Cannot ref class constructor %{public}s because of %{public}d", className.c_str(), res);
     }
 
-    if (!nClass.addCleanHook) {
-        napi_status status = napi_add_env_cleanup_hook(env, CleanClass, env);
-        if (status != napi_ok) {
-            HILOGE("INNER BUG. Cleanup_hook registation has failed because of %{public}d", res);
+    // The member env records the env of the last successful hook registration; a differing env means
+    // this thread is serving a fresh lifecycle (thread reuse). wrapReleased must be reset only if
+    // the snapshot above was empty, i.e. no classes of the previous env remain. Otherwise old refs
+    // are still alive: keep the Stream guard untouched for their teardown and just register the
+    // hook for this env (warned below).
+    if (nClass.env != env) {
+        if (mapEmpty) {
+            lock_guard<std::mutex> wrapLock(nClass.wrapLock);
+            nClass.wrapReleased = false;
         } else {
-            nClass.addCleanHook = true;
+            HILOGW("Cleanup_hook registers on a new env while exClassMap is not empty");
+        }
+        napi_status status = napi_add_env_cleanup_hook(env, CleanClass, &nClass);
+        if (status != napi_ok) {
+            HILOGE("INNER BUG. Cleanup_hook registration has failed because of %{public}d, env %{public}p, "
+                   "class %{public}s", status, env, className.c_str());
+        } else {
+            nClass.env = env;
+            HILOGD("Cleanup_hook registered on env %{public}p for class %{public}s", env, className.c_str());
         }
     }
     return res == napi_ok;
@@ -72,21 +89,31 @@ bool NClass::SaveClass(napi_env env, string className, napi_value exClass)
 
 void NClass::CleanClass(void *arg)
 {
-    napi_env env = reinterpret_cast<napi_env>(arg);
-    NClass &nClass = NClass::GetInstance();
-    lock_guard<std::mutex> lock(nClass.exClassMapLock);
+    auto *nClass = static_cast<NClass *>(arg);
+    if (nClass == nullptr) {
+        return;
+    }
+    lock_guard<std::mutex> lock(nClass->exClassMapLock);
+    napi_env env = nClass->env;
+    if (env == nullptr) {
+        return;
+    }
     {
-        lock_guard<std::mutex> wrapLock(nClass.wrapLock);
-        nClass.wrapReleased = true;
+        lock_guard<std::mutex> wrapLock(nClass->wrapLock);
+        nClass->wrapReleased = true;
     }
     napi_status res;
-    for (auto it = nClass.exClassMap.begin(); it != nClass.exClassMap.end(); ++it) {
+    for (auto it = nClass->exClassMap.begin(); it != nClass->exClassMap.end(); ++it) {
         res = napi_delete_reference(env, it->second);
         if (res != napi_ok) {
             HILOGE("Cannot del ref class constructor %{public}s because of %{public}d", it->first.c_str(), res);
         }
     }
-    nClass.exClassMap.clear();
+    nClass->exClassMap.clear();
+    // The torn-down env may free its address before this thread is reused by a new env; keeping
+    // the stale value would skip re-registration (and the wrapReleased reset) if the new env
+    // happens to land on the same address.
+    nClass->env = nullptr;
 }
 
 napi_value NClass::InstantiateClass(napi_env env, const string& className, const vector<napi_value>& args)

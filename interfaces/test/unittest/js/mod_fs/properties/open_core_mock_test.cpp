@@ -19,6 +19,7 @@
 #include <gtest/gtest.h>
 #include <sys/prctl.h>
 
+#include "datashare_mock.h"
 #include "unistd_mock.h"
 #include "uv_fs_mock.h"
 
@@ -41,10 +42,12 @@ void OpenCoreMockTest::SetUpTestSuite()
     prctl(PR_SET_NAME, "OpenCoreMockTest");
     UvFsMock::EnableMock();
     UnistdMock::EnableMock();
+    DataShareMock::EnableMock();
 }
 
 void OpenCoreMockTest::TearDownTestSuite()
 {
+    DataShareMock::DisableMock();
     UvFsMock::DisableMock();
     UnistdMock::DisableMock();
     GTEST_LOG_(INFO) << "TearDownTestSuite";
@@ -175,6 +178,72 @@ HWTEST_F(OpenCoreMockTest, OpenCoreMockTest_DoOpen_004, testing::ext::TestSize.L
     EXPECT_EQ(err.GetErrMsg(), "Operation not permitted");
 
     GTEST_LOG_(INFO) << "OpenCoreMockTest-end OpenCoreMockTest_DoOpen_004";
+}
+
+/**
+ * @tc.name: OpenCoreMockTest_DoOpen_005
+ * @tc.desc: Test function of OpenCore::DoOpen interface for FAILURE when media URL is not exists.
+ *           Migrated from OpenCoreTest_DoOpen_003: the datashare path is mocked so the case no longer
+ *           depends on a live medialibrary service.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(OpenCoreMockTest, OpenCoreMockTest_DoOpen_005, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "OpenCoreMockTest-begin OpenCoreMockTest_DoOpen_005";
+
+    string path = "file://media/OpenCoreMockTest_DoOpen_005_non_existent.jpg";
+    int32_t mode = 0;
+
+    // The datashare helper is created and rejects opening the non-existent media file with EPERM
+    auto dataShareMock = DataShareMock::GetMock();
+    EXPECT_CALL(*dataShareMock, Creator(testing::_, testing::_))
+        .WillOnce(testing::Return(dataShareMock));
+    EXPECT_CALL(*dataShareMock, OpenFile(testing::_, testing::_))
+        .WillOnce(testing::Return(-EPERM));
+
+    auto res = OpenCore::DoOpen(path, mode);
+
+    testing::Mock::VerifyAndClearExpectations(dataShareMock.get());
+    EXPECT_FALSE(res.IsSuccess());
+    auto err = res.GetError();
+    EXPECT_EQ(err.GetErrNo(), 13900001);
+    EXPECT_EQ(err.GetErrMsg(), "Operation not permitted");
+
+    GTEST_LOG_(INFO) << "OpenCoreMockTest-end OpenCoreMockTest_DoOpen_005";
+}
+
+/**
+ * @tc.name: OpenCoreMockTest_DoOpen_006
+ * @tc.desc: Test function of OpenCore::DoOpen interface for FAILURE when the datashare helper cannot
+ *           be created (e.g. the medialibrary service is down), which surfaces E_PERMISSION (201).
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(OpenCoreMockTest, OpenCoreMockTest_DoOpen_006, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "OpenCoreMockTest-begin OpenCoreMockTest_DoOpen_006";
+
+    string path = "file://media/OpenCoreMockTest_DoOpen_006_non_existent.jpg";
+    int32_t mode = 0;
+
+    // The datashare helper cannot be created: Creator returns nullptr and OpenFile is never reached
+    auto dataShareMock = DataShareMock::GetMock();
+    EXPECT_CALL(*dataShareMock, Creator(testing::_, testing::_))
+        .WillOnce(testing::Return(nullptr));
+    EXPECT_CALL(*dataShareMock, OpenFile(testing::_, testing::_)).Times(0);
+
+    auto res = OpenCore::DoOpen(path, mode);
+
+    testing::Mock::VerifyAndClearExpectations(dataShareMock.get());
+    EXPECT_FALSE(res.IsSuccess());
+    auto err = res.GetError();
+    EXPECT_EQ(err.GetErrNo(), 13900042);
+    EXPECT_EQ(err.GetErrMsg(), "Unknown error Internal errno is 201");
+
+    GTEST_LOG_(INFO) << "OpenCoreMockTest-end OpenCoreMockTest_DoOpen_006";
 }
 
 } // namespace OHOS::FileManagement::ModuleFileIO::Test

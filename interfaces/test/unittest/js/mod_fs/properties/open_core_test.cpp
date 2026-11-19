@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Huawei Device Co., Ltd.
+ * Copyright (C) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -104,29 +104,6 @@ HWTEST_F(OpenCoreTest, OpenCoreTest_DoOpen_002, testing::ext::TestSize.Level1)
     EXPECT_EQ(err.GetErrMsg(), "Invalid argument");
 
     GTEST_LOG_(INFO) << "OpenCoreTest-end OpenCoreTest_DoOpen_002";
-}
-
-/**
- * @tc.name: OpenCoreTest_DoOpen_003
- * @tc.desc: Test function of OpenCore::DoOpen interface for FAILURE when media URL is not exists.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- */
-HWTEST_F(OpenCoreTest, OpenCoreTest_DoOpen_003, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "OpenCoreTest-begin OpenCoreTest_DoOpen_003";
-
-    string path = "file://media/OpenCoreTest_DoOpen_003_non_existent.jpg";
-    int32_t mode = 0;
-
-    auto res = OpenCore::DoOpen(path, mode);
-    EXPECT_FALSE(res.IsSuccess());
-    auto err = res.GetError();
-    EXPECT_EQ(err.GetErrNo(), 13900001);
-    EXPECT_EQ(err.GetErrMsg(), "Operation not permitted");
-
-    GTEST_LOG_(INFO) << "OpenCoreTest-end OpenCoreTest_DoOpen_003";
 }
 
 /**
