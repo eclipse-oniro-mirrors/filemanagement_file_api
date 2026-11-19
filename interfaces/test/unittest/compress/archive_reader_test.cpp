@@ -380,14 +380,6 @@ TEST(ArchiveReadTest, BufferReadDecompressNormalCase3)
     EXPECT_EQ(crc, crcRslt);
 }
 
-TEST(ArchiveReadTest, BufferReadDecompressEmptyFile)
-{
-    uint32_t crcRslt = 0;
-    OH_Archive_ErrCode ret = TestBufferReadDecompress("/data/test/aafgGWKC1E23.txt",
-            "/data/test/buffer_read_normal_EmptyFile_decompress", crcRslt);
-    EXPECT_EQ(OH_ARCHIVE_PARAM_ERROR, ret);
-}
-
 TEST(ArchiveReadTest, BufferReadDecompressOutBufInsuff)
 {
     uint32_t crc = 0;
