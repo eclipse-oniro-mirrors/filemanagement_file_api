@@ -30,6 +30,7 @@ public:
     {
         CreateGlobalReference();
     }
+
     void OnCancel() override;
 
 public:

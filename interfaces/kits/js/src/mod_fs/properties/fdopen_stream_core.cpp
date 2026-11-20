@@ -41,7 +41,6 @@ FsResult<FsStream *> FdopenStreamCore::DoFdopenStream(const int &fd, const strin
         HILOGE("Failed to fopen file by fd");
         return FsResult<FsStream *>::Error(errno);
     }
-
 #if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM)
     FdTagFunc::SetFdTag(fd, 0);
 #endif

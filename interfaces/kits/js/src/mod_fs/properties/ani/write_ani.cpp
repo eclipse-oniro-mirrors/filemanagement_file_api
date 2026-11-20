@@ -79,7 +79,6 @@ static std::tuple<bool, ani_string> ParseStringBuffer(ani_env *env, const ani_ob
         return { false, {} };
     }
     auto result = static_cast<ani_string>(buf);
-
     return { true, std::move(result) };
 }
 
@@ -97,7 +96,6 @@ static std::tuple<bool, ani_arraybuffer> ParseArrayBuffer(ani_env *env, const an
         return { false, {} };
     }
     auto result = static_cast<ani_arraybuffer>(buf);
-
     return { true, std::move(result) };
 }
 
@@ -146,7 +144,6 @@ ani_long WriteAni::WriteSync(
         }
         return static_cast<long>(ret.GetData().value());
     }
-
     HILOGE("Unsupported buffer type!");
     ErrorHandler::Throw(env, EINVAL);
     return -1;

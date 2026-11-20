@@ -19,7 +19,6 @@ import argparse
 import subprocess
 import sys
 
-
 def run_command(in_cmd):
     print(" ".join(in_cmd))
     proc = subprocess.Popen(in_cmd, stdout=subprocess.PIPE,
