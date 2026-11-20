@@ -19,6 +19,8 @@ group("file_api_unittest") {
     "class_file:class_file_test",
     "compress:compress_test",
     "filemgmt_libn_test",
+    "inner_api:atomic_file_mock_test",
+    "inner_api:atomic_file_test",
     "js:ani_file_environment_test",
     "js:ani_file_fs_mock_test",
     "js:ani_file_fs_test",

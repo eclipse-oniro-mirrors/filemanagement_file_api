@@ -28,7 +28,6 @@ fs_base_src = [
   "${src_path}/mod_fs/class_file/file_n_exporter.cpp",
   "${src_path}/mod_fs/class_stat/stat_n_exporter.cpp",
   "${src_path}/mod_fs/common_func.cpp",
-  "${src_path}/mod_fs/fdtag_func.cpp",
   "${src_path}/mod_fs/module.cpp",
   "${src_path}/mod_fs/properties/close.cpp",
   "${src_path}/mod_fs/properties/fdatasync.cpp",

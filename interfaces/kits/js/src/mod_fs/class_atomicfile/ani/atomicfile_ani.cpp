@@ -285,31 +285,14 @@ ani_object AtomicFileAni::StartWrite(ani_env *env, [[maybe_unused]] ani_object o
         return nullptr;
     }
 
-    auto entity = atomicFile->GetEntity();
-    if (entity == nullptr) {
-        HILOGE("Failed to get atomicFile entity");
-        ErrorHandler::Throw(env, UNKNOWN_ERR);
+    auto ret = atomicFile->StartWrite();
+    if (!ret.IsSuccess()) {
+        HILOGE("Failed to start write");
+        ErrorHandler::Throw(env, ret.GetError());
         return nullptr;
     }
 
-    fs::path filePath = entity->newFileName;
-    fs::path parentPath = filePath.parent_path();
-    if (access(parentPath.c_str(), F_OK) != 0) {
-        HILOGE("Parent directory does not exist, err:%{public}d", errno);
-        ErrorHandler::Throw(env, ENOENT);
-        return nullptr;
-    }
-
-    char *tmpfile = const_cast<char *>(entity->newFileName.c_str());
-    int fd = mkstemp(tmpfile);
-    if (fd == -1) {
-        HILOGE("Fail to create tmp file err:%{public}d!", errno);
-        ErrorHandler::Throw(env, ENOENT);
-        return nullptr;
-    }
-    close(fd);
-
-    ani_object writeStream = CreateStream(env, object, WRITE_STREAM_CLASS, entity->newFileName);
+    ani_object writeStream = CreateStream(env, object, WRITE_STREAM_CLASS, ret.GetData().value());
     if (writeStream == nullptr) {
         HILOGE("Failed to create write stream");
         return nullptr;

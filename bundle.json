@@ -77,6 +77,15 @@
         },
         "inner_kits": [
           {
+            "name": "//foundation/filemanagement/file_api/interfaces/inner_api/native/atomic_file:atomic_file_native",
+            "header": {
+              "header_files": [
+                "atomic_file.h"
+              ],
+              "header_base": "//foundation/filemanagement/file_api/interfaces/inner_api/native/atomic_file/include"
+            }
+          },
+          {
             "name": "//foundation/filemanagement/file_api/interfaces/kits/native:remote_uri_native",
             "header": {
               "header_files": [

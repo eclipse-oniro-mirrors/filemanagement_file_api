@@ -19,6 +19,8 @@
 #include "fs_atomicfile_entity.h"
 #include "fs_file.h"
 
+#include "atomic_file.h"
+
 namespace OHOS {
 namespace FileManagement {
 namespace ModuleFileIO {
@@ -48,8 +50,10 @@ public:
     static void FinalizeCallback(void *finalizeData, [[maybe_unused]] void *finalizeHint);
 
 private:
-    unique_ptr<FsAtomicFileEntity> entity;
-    explicit FsAtomicFile(unique_ptr<FsAtomicFileEntity> entity) : entity(move(entity)) {}
+    unique_ptr<FileApi::AtomicFile> atomicFile_;
+    FsAtomicFileEntity entity_;
+    void SyncEntity();
+    explicit FsAtomicFile(string path);
 };
 } // namespace ModuleFileIO
 } // namespace FileManagement

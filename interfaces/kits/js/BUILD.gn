@@ -151,12 +151,15 @@ ohos_shared_library("fs") {
     "${src_path}/common",
     "${src_path}/common/file_helper",
     "${src_path}/mod_fs",
+    "${src_path}/mod_fs/class_atomicfile",
+    "${src_path}/mod_fs/class_file",
     "${src_path}/mod_fs/class_filemapping",
     "${src_path}/mod_fs/properties",
     "${src_path}/mod_fs/properties/copy_listener",
     "${src_path}/mod_fs/properties/file_filter",
     "${src_path}/mod_fs/properties/file_filter/napi",
     "${src_path}/mod_fs/properties/napi",
+    "${file_api_path}/interfaces/inner_api/native/atomic_file/include",
     "${utils_path}/common/include",
     "${utils_path}/filemgmt_libfs/include",
   ]
@@ -220,6 +223,7 @@ ohos_shared_library("fs") {
 
     sources += [
       "src/mod_fs/class_atomicfile/atomicfile_n_exporter.cpp",
+      "src/mod_fs/class_atomicfile/fs_atomicfile.cpp",
       "src/mod_fs/class_filemapping/fs_filemapping.cpp",
       "src/mod_fs/class_filemapping/napi/filemapping_napi.cpp",
       "src/mod_fs/class_randomaccessfile/randomaccessfile_n_exporter.cpp",
@@ -263,6 +267,7 @@ ohos_shared_library("fs") {
       "ability_runtime:napi_common",
       "access_token:libtokenid_sdk",
       "app_file_service:fileuri_native",
+      "bounds_checking_function:libsec_shared",
       "bundle_framework:appexecfwk_base",
       "bundle_framework:appexecfwk_core",
       "c_utils:utils",
@@ -280,6 +285,7 @@ ohos_shared_library("fs") {
       external_deps += [ "api_metrics:histogrammanager" ]
     }
     deps += [
+      "${file_api_path}/interfaces/inner_api/native/atomic_file:atomic_file_native",
       "${file_api_path}/interfaces/kits/native:remote_uri_native",
       "${file_api_path}/interfaces/kits/native:task_signal_native",
       "${file_api_path}/interfaces/kits/rust:rust_file",
@@ -671,6 +677,7 @@ group("build_kits_js") {
 config("ani_config") {
   include_dirs = [
     "./include",
+    "${file_api_path}/interfaces/inner_api/native/atomic_file/include",
     "${file_api_path}/interfaces/kits/rust/include",
     "${utils_path}/common/include",
     "${utils_path}/filemgmt_libfs/include",
@@ -784,7 +791,6 @@ taihe_shared_library("file_fs_taihe") {
     "src/mod_fs/class_watcher/fs_file_watcher.cpp",
     "src/mod_fs/class_watcher/fs_watcher.cpp",
     "src/mod_fs/class_watcher/watcher_data_cache.cpp",
-    "src/mod_fs/fdtag_func.cpp",
     "src/mod_fs/fs_utils.cpp",
     "src/mod_fs/properties/access_core.cpp",
     "src/mod_fs/properties/ani/access_ani.cpp",
@@ -863,6 +869,7 @@ taihe_shared_library("file_fs_taihe") {
   deps = [
     ":ohos_file_fs_abc_etc",
     ":run_taihe",
+    "${file_api_path}/interfaces/inner_api/native/atomic_file:atomic_file_native",
     "${file_api_path}/interfaces/kits/native:remote_uri_native",
     "${file_api_path}/interfaces/kits/native:task_signal_native",
     "${file_api_path}/interfaces/kits/rust:rust_file",

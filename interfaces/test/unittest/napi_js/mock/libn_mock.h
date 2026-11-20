@@ -92,6 +92,7 @@ public:
     virtual NVal CreateBool(napi_env env, bool val) = 0;
     virtual std::tuple<bool, void *, size_t> ToArraybuffer() = 0;
     virtual NVal CreateInt64(napi_env env, int64_t val) = 0;
+    virtual NVal CreateInt32(napi_env env, int32_t val) = 0;
 };
 
 class LibnMock : public ILibnMock {
@@ -151,6 +152,7 @@ public:
     MOCK_METHOD(NVal, CreateBool, (napi_env, bool), (override));
     MOCK_METHOD((std::tuple<bool, void *, size_t>), ToArraybuffer, (), (override));
     MOCK_METHOD(NVal, CreateInt64, (napi_env, int64_t), (override));
+    MOCK_METHOD(NVal, CreateInt32, (napi_env, int32_t), (override));
 
 public:
     int32_t lastErrno = 0;
