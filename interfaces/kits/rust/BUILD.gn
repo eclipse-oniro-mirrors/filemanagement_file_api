@@ -29,7 +29,6 @@ ohos_rust_shared_ffi("rust_file") {
     "hilog:hilog_rust",
     "rust_libc:lib",
   ]
-
   innerapi_tags = [ "platformsdk" ]
   public_configs = [ ":public_config" ]
 }

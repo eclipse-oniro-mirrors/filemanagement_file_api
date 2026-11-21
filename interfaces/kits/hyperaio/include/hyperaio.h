@@ -104,6 +104,7 @@ private:
     std::atomic<uint32_t> pendingCqeCount_{0};
     std::condition_variable cqeCond_;
     std::mutex cqeMutex_;
+
     void HarvestRes();
     void GetIoResult();
     void HandleRequestError(std::vector<uint64_t> &errorVec, int32_t errorcode);
