@@ -12,38 +12,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-#ifndef INTERFACES_KITS_JS_SRC_MOD_FS_FDTAG_FUNC_H
-#define INTERFACES_KITS_JS_SRC_MOD_FS_FDTAG_FUNC_H
- 
-#include "fd_guard.h"
- 
+
+#ifndef UTILS_FILEMGMT_LIBFS_INCLUDE_FDTAG_FUNC_H
+#define UTILS_FILEMGMT_LIBFS_INCLUDE_FDTAG_FUNC_H
+
 #include <cstdint>
 #include <cstddef>
- 
+
 namespace OHOS {
 namespace FileManagement {
 namespace ModuleFileIO {
- 
+
 constexpr uint64_t PREFIX_ADDR = 0xabc0000000000000;
- 
+
 #define FD_SAN_TABLE_SIZE 128
 #define FD_SAN_OVERFLOW_END 2048
- 
+
 struct FdSanEntry {
     _Atomic(uint64_t) closeTag;
 };
- 
+
 struct FdSanTableOverflow {
     size_t len;
     struct FdSanEntry entries[];
 };
- 
+
 struct FdSanTable {
     struct FdSanEntry entries[FD_SAN_TABLE_SIZE];
     _Atomic(struct FdSanTableOverflow*) overflow;
 };
- 
+
 struct FdTagFunc {
 #if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM) && !defined(PREVIEW_LINUX)
     static uint64_t GetFdTag(int fd);
@@ -53,4 +51,4 @@ struct FdTagFunc {
 } // namespace ModuleFileIO
 } // namespace FileManagement
 } // namespace OHOS
-#endif // INTERFACES_KITS_JS_SRC_MOD_FS_FDTAG_FUNC_H
+#endif // UTILS_FILEMGMT_LIBFS_INCLUDE_FDTAG_FUNC_H

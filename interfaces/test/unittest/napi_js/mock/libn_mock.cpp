@@ -1075,4 +1075,26 @@ NVal NVal::CreateInt64(napi_env env, int64_t val)
 
     return realCreateInt64(env, val);
 }
+
+NVal NVal::CreateInt32(napi_env env, int32_t val)
+{
+    if (LibnMock::IsMockable()) {
+        return LibnMock::GetMock()->CreateInt32(env, val);
+    }
+
+    static NVal (*realCreateInt32)(napi_env, int32_t) = []() {
+        auto func = (NVal(*)(napi_env, int32_t))dlsym(
+            RTLD_NEXT, "_ZN4OHOS14FileManagement4LibN4NVal11CreateInt32EP10napi_env__i");
+        if (!func) {
+            GTEST_LOG_(ERROR) << "Failed to resolve real CreateInt32: " << dlerror();
+        }
+        return func;
+    }();
+
+    if (!realCreateInt32) {
+        return { nullptr, nullptr };
+    }
+
+    return realCreateInt32(env, val);
+}
 #endif

@@ -12,15 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 #include "fdtag_func.h"
 #include "filemgmt_libhilog.h"
- 
+
 #include <stdatomic.h>
 #if !defined(WIN_PLATFORM) && !defined(IOS_PLATFORM) && !defined(CROSS_PLATFORM) && !defined(PREVIEW_LINUX)
 #include <sys/mman.h>
 #endif
- 
+
 namespace OHOS {
 namespace FileManagement {
 namespace ModuleFileIO {
@@ -38,7 +38,7 @@ inline size_t FS_ALIGN(size_t x, size_t y)
 static struct FdSanTable g_fdTable = {
     .overflow = nullptr,
 };
- 
+
 static struct FdSanEntry* GetFsFdEntry(size_t idx)
 {
     if (idx >= FD_SAN_OVERFLOW_END) {
@@ -54,7 +54,7 @@ static struct FdSanEntry* GetFsFdEntry(size_t idx)
         size_t overflowCount = FD_SAN_OVERFLOW_END - FD_SAN_TABLE_SIZE;
         size_t requiredSize = sizeof(struct FdSanTableOverflow) + overflowCount * sizeof(struct FdSanEntry);
         size_t alignedSize = FS_ALIGN(requiredSize, ALIGN_SIZE);
- 
+
         size_t alignedCount = (alignedSize - sizeof(struct FdSanTableOverflow)) / sizeof(struct FdSanEntry);
         void* allocation =
                 mmap(nullptr, alignedSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -74,14 +74,14 @@ static struct FdSanEntry* GetFsFdEntry(size_t idx)
             munmap(allocation, alignedSize);
         }
     }
- 
+
     size_t offset = idx - FD_SAN_TABLE_SIZE;
     if (localOverflow->len <= offset) {
         return nullptr;
     }
     return &localOverflow->entries[offset];
 }
- 
+
 static struct FdSanEntry* GetFdSanEntry(int fd)
 {
     if (fd < 0) {
@@ -89,7 +89,7 @@ static struct FdSanEntry* GetFdSanEntry(int fd)
     }
     return GetFsFdEntry(fd);
 }
- 
+
 uint64_t FdTagFunc::GetFdTag(int fd)
 {
     struct FdSanEntry* fde = GetFdSanEntry(fd);
@@ -98,7 +98,7 @@ uint64_t FdTagFunc::GetFdTag(int fd)
     }
     return atomic_load(&fde->closeTag);
 }
- 
+
 void FdTagFunc::SetFdTag(int fd, uint64_t tag)
 {
     struct FdSanEntry* fde = GetFdSanEntry(fd);

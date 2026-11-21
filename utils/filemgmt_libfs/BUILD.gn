@@ -46,7 +46,10 @@ ohos_shared_library("filemgmt_libfs") {
     }
   }
 
-  sources = [ "src/fs_error.cpp" ]
+  sources = [
+    "src/fdtag_func.cpp",
+    "src/fs_error.cpp",
+  ]
 
   if (use_mingw_win) {
     defines = [ "WIN_PLATFORM" ]

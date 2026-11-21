@@ -73,6 +73,7 @@ ohos_unittest("ani_file_environment_test") {
 }
 
 ani_file_fs_core = [
+  "${file_api_path}/interfaces/inner_api/native/atomic_file/atomic_file.cpp",
   "${src_path}/common/file_api_debug.cpp",
   "${src_path}/common/file_fs_trace.cpp",
   "${src_path}/common/file_helper/fd_guard.cpp",
@@ -90,7 +91,6 @@ ani_file_fs_core = [
   "${src_path}/mod_fs/class_watcher/fs_file_watcher.cpp",
   "${src_path}/mod_fs/class_watcher/fs_watcher.cpp",
   "${src_path}/mod_fs/class_watcher/watcher_data_cache.cpp",
-  "${src_path}/mod_fs/fdtag_func.cpp",
   "${src_path}/mod_fs/fs_utils.cpp",
   "${src_path}/mod_fs/properties/access_core.cpp",
   "${src_path}/mod_fs/properties/close_core.cpp",
@@ -138,6 +138,8 @@ ohos_unittest("ani_file_fs_mock_test") {
   resource_config_file = "../resource/ohos_test.xml"
 
   include_dirs = [
+    "${file_api_path}/interfaces/inner_api/native/atomic_file/include",
+    "${file_api_path}/interfaces/inner_api/native/atomic_file",
     "${file_api_path}/interfaces/kits/js/src/common",
     "${file_api_path}/interfaces/kits/js/src/common/file_helper",
     "${file_api_path}/interfaces/kits/js/src/mod_fs",
@@ -158,6 +160,7 @@ ohos_unittest("ani_file_fs_mock_test") {
     "${file_api_path}/interfaces/test/unittest/common_utils",
     "${file_api_path}/interfaces/test/unittest/js/mod_fs/common",
     "${file_api_path}/interfaces/test/unittest/js/mod_fs/mock",
+    "${utils_path}/filemgmt_libfs/include",
   ]
 
   sources = [
@@ -254,6 +257,8 @@ ohos_unittest("ani_file_fs_test") {
   resource_config_file = "../resource/ohos_test.xml"
 
   include_dirs = [
+    "${file_api_path}/interfaces/inner_api/native/atomic_file/include",
+    "${file_api_path}/interfaces/inner_api/native/atomic_file",
     "${file_api_path}/interfaces/kits/js/src/common",
     "${file_api_path}/interfaces/kits/js/src/common/file_helper",
     "${file_api_path}/interfaces/kits/js/src/mod_fs",
@@ -274,6 +279,7 @@ ohos_unittest("ani_file_fs_test") {
     "${file_api_path}/interfaces/test/unittest/js/mod_fs/common",
     "${file_api_path}/interfaces/test/unittest/js/mod_fs/fdtag",
     "${utils_path}/common/include",
+    "${utils_path}/filemgmt_libfs/include",
   ]
 
   sources = [

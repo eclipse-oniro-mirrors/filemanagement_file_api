@@ -124,15 +124,84 @@ HWTEST_F(FdtagFuncTest, GetFdTag_003, testing::ext::TestSize.Level1)
 HWTEST_F(FdtagFuncTest, SetFdTag_001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "FdtagFuncTest-begin SetFdTag_001";
- 
+
     FdTagFunc::SetFdTag(-1, 0);
     uint64_t res = FdTagFunc::GetFdTag(-1);
- 
+
     EXPECT_EQ(res, 0);
- 
+
     GTEST_LOG_(INFO) << "FdtagFuncTest-end SetFdTag_001";
 }
- 
+
+/**
+ * @tc.name: SetFdTag_002
+ * @tc.desc: Test SetFdTag/GetFdTag round-trip with a non-trivial tag value.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(FdtagFuncTest, SetFdTag_002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FdtagFuncTest-begin SetFdTag_002";
+
+    int fd = FD_SAN_TABLE_SIZE + 1;
+    uint64_t expectedTag = PREFIX_ADDR | 0x1234;
+    FdTagFunc::SetFdTag(fd, expectedTag);
+    uint64_t actualTag = FdTagFunc::GetFdTag(fd);
+
+    EXPECT_EQ(actualTag, expectedTag);
+
+    // Clean up
+    FdTagFunc::SetFdTag(fd, 0);
+    EXPECT_EQ(FdTagFunc::GetFdTag(fd), 0UL);
+
+    GTEST_LOG_(INFO) << "FdtagFuncTest-end SetFdTag_002";
+}
+
+/**
+ * @tc.name: SetFdTag_003
+ * @tc.desc: Test SetFdTag clears tag to zero and GetFdTag returns zero after clear.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(FdtagFuncTest, SetFdTag_003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FdtagFuncTest-begin SetFdTag_003";
+
+    int fd = FD_SAN_TABLE_SIZE + 2;
+    FdTagFunc::SetFdTag(fd, PREFIX_ADDR | 0x5678);
+    EXPECT_NE(FdTagFunc::GetFdTag(fd), 0UL);
+
+    // Clear tag to zero (simulates what CloseWithFdsan does before closing)
+    FdTagFunc::SetFdTag(fd, 0);
+    EXPECT_EQ(FdTagFunc::GetFdTag(fd), 0UL);
+
+    GTEST_LOG_(INFO) << "FdtagFuncTest-end SetFdTag_003";
+}
+
+/**
+ * @tc.name: GetFdTag_004
+ * @tc.desc: Test GetFdTag returns 0 for fd=0 (stdin, should be in inline table).
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(FdtagFuncTest, GetFdTag_004, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FdtagFuncTest-begin GetFdTag_004";
+
+    // fd=0 is within the inline table range [0, FD_SAN_TABLE_SIZE)
+    // Without any SetFdTag call, GetFdTag should return 0
+    // We use a safe fd within range that's unlikely to be used by the test process
+    int fd = FD_SAN_TABLE_SIZE - 1;
+    FdTagFunc::SetFdTag(fd, 0);
+    uint64_t res = FdTagFunc::GetFdTag(fd);
+    EXPECT_EQ(res, 0UL);
+
+    GTEST_LOG_(INFO) << "FdtagFuncTest-end GetFdTag_004";
+}
+
 } // namespace Test
 } // namespace ModuleFileIO
 } // namespace FileManagement
