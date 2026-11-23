@@ -21,6 +21,7 @@
 #include <sys/prctl.h>
 
 #include "common_func.h"
+#include "fcntl_mock.h"
 #include "fdsan_mock.h"
 #include "libn_mock.h"
 #include "randomaccessfile_entity.h"
@@ -520,7 +521,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Ge
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::GetFD(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error. File descriptor in bad state");
+    libnMock->VerifyAndClearErr(13900005, "I/O error");
     EXPECT_EQ(res, nullptr);
 }
 
@@ -591,7 +592,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Ge
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::GetFPointer(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error. File descriptor in bad state");
+    libnMock->VerifyAndClearErr(13900005, "I/O error");
     EXPECT_EQ(res, nullptr);
 }
 
@@ -661,7 +662,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Se
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::SetFilePointerSync(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error. File descriptor in bad state");
+    libnMock->VerifyAndClearErr(13900005, "I/O error");
     EXPECT_EQ(res, nullptr);
 }
 
@@ -694,7 +695,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Se
 
 /**
  * @tc.name: RandomAccessFileNExporterMockTest_SetFilePointerSync_004
- * @tc.desc: Test function of SetFilePointerSync for FAILURE when fp < 0 (less than).
+ * @tc.desc: Test function of SetFilePointerSync for SUCCESS when fp < 0 (less than).
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -705,6 +706,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Se
     napi_callback_info mInfo = reinterpret_cast<napi_callback_info>(0x1122);
     napi_value nv = reinterpret_cast<napi_value>(0x1200);
     napi_value arg = reinterpret_cast<napi_value>(0x1300);
+    NVal mockNval = { env, nv };
     auto libnMock = LibnMock::GetMock();
     EXPECT_CALL(*libnMock, InitArgs(testing::A<size_t>())).WillOnce(Return(true));
     EXPECT_CALL(*libnMock, GetThisVar()).WillOnce(Return(nv));
@@ -712,11 +714,12 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Se
         .WillOnce(DoAll(SetArgPointee<2>(static_cast<void *>(rafEntity.get())), Return(napi_ok)));
     EXPECT_CALL(*libnMock, GetArg(NARG_POS::FIRST)).WillOnce(Return(arg));
     EXPECT_CALL(*libnMock, ToInt64()).WillOnce(Return(make_tuple(true, static_cast<int64_t>(-1))));
-    EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
+    EXPECT_CALL(*libnMock, CreateUndefined(_)).WillOnce(Return(mockNval));
+    EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(0);
     auto res = RandomAccessFileNExporter::SetFilePointerSync(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900020, "Invalid argument");
-    EXPECT_EQ(res, nullptr);
+    EXPECT_NE(res, nullptr);
+    EXPECT_EQ(rafEntity->filePointer, -1);
 }
 
 /**
@@ -817,7 +820,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Re
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::ReadSync(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error. File descriptor in bad state");
+    libnMock->VerifyAndClearErr(13900005, "I/O error");
     EXPECT_EQ(res, nullptr);
 }
 
@@ -843,7 +846,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Re
     EXPECT_CALL(*libnMock, GetArg(NARG_POS::FIRST)).WillOnce(Return(arg1));
     EXPECT_CALL(*libnMock, GetArg(NARG_POS::SECOND)).WillOnce(Return(arg2));
     EXPECT_CALL(*libnMock, ToArraybuffer()).WillOnce(Return(make_tuple(false, nullptr, 0)));
-    EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
+    EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(2);
     auto res = RandomAccessFileNExporter::ReadSync(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
     libnMock->VerifyAndClearErr(13900020, "Invalid argument");
@@ -1005,7 +1008,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Re
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::Read(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error. File descriptor in bad state");
+    libnMock->VerifyAndClearErr(13900005, "I/O error");
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1031,7 +1034,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Re
     EXPECT_CALL(*libnMock, GetArg(NARG_POS::FIRST)).WillOnce(Return(arg1));
     EXPECT_CALL(*libnMock, GetArg(NARG_POS::SECOND)).WillOnce(Return(arg2));
     EXPECT_CALL(*libnMock, ToArraybuffer()).WillOnce(Return(make_tuple(false, nullptr, 0)));
-    EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
+    EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(2);
     auto res = RandomAccessFileNExporter::Read(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
     libnMock->VerifyAndClearErr(13900020, "Invalid argument");
@@ -1078,7 +1081,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Wr
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::WriteSync(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error. File descriptor in bad state");
+    libnMock->VerifyAndClearErr(13900005, "I/O error");
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1106,7 +1109,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Wr
     EXPECT_CALL(*libnMock, GetProp("encoding")).WillOnce(Return(NVal(env, arg2)));
     EXPECT_CALL(*libnMock, TypeIs(napi_string)).WillOnce(Return(false));
     EXPECT_CALL(*libnMock, ToArraybuffer()).WillOnce(Return(make_tuple(false, nullptr, 0)));
-    EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
+    EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(2);
     auto res = RandomAccessFileNExporter::WriteSync(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
     libnMock->VerifyAndClearErr(13900020, "Invalid argument");
@@ -1231,7 +1234,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Wr
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::Write(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error. File descriptor in bad state");
+    libnMock->VerifyAndClearErr(13900005, "I/O error");
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1259,7 +1262,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Wr
     EXPECT_CALL(*libnMock, GetProp("encoding")).WillOnce(Return(NVal(env, arg2)));
     EXPECT_CALL(*libnMock, TypeIs(napi_string)).WillOnce(Return(false));
     EXPECT_CALL(*libnMock, ToArraybuffer()).WillOnce(Return(make_tuple(false, nullptr, 0)));
-    EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
+    EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(2);
     auto res = RandomAccessFileNExporter::Write(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
     libnMock->VerifyAndClearErr(13900020, "Invalid argument");
@@ -1323,7 +1326,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Co
     napi_value nv = reinterpret_cast<napi_value>(0x1200);
     auto libnMock = LibnMock::GetMock();
     EXPECT_CALL(*libnMock, InitArgs(testing::A<size_t>())).WillOnce(Return(true));
-    EXPECT_CALL(*libnMock, GetThisVar()).WillOnce(Return(nv));
+    EXPECT_CALL(*libnMock, GetThisVar()).WillOnce(Return(nv)).WillOnce(Return(nv));
     EXPECT_CALL(*libnMock, napi_wrap(_, _, _, _, _, _)).WillOnce(Return(napi_ok));
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(0);
     auto res = RandomAccessFileNExporter::Constructor(env, mInfo);
@@ -1371,7 +1374,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Ge
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::GetReadStream(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error. File descriptor in bad state");
+    libnMock->VerifyAndClearErr(13900005, "I/O error");
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1388,6 +1391,9 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Ge
     napi_callback_info mInfo = reinterpret_cast<napi_callback_info>(0x1122);
     napi_value nv = reinterpret_cast<napi_value>(0x1200);
     auto libnMock = LibnMock::GetMock();
+    auto fcntlMock = FcntlMock::GetMock();
+    FcntlMock::EnableMock();
+    EXPECT_CALL(*fcntlMock, fcntl(rafEntity->fd.get()->GetFD(), F_GETFL)).WillOnce(Return(O_WRONLY));
     EXPECT_CALL(*libnMock, InitArgs(testing::A<size_t>())).WillOnce(Return(true));
     EXPECT_CALL(*libnMock, GetThisVar()).WillOnce(Return(nv));
     EXPECT_CALL(*libnMock, napi_unwrap(_, _, _))
@@ -1395,7 +1401,9 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Ge
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::GetReadStream(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900002);
+    testing::Mock::VerifyAndClearExpectations(fcntlMock.get());
+    libnMock->VerifyAndClearErr(13900012, "Permission denied");
+    FcntlMock::DisableMock();
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1439,7 +1447,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Ge
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::GetWriteStream(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error. File descriptor in bad state");
+    libnMock->VerifyAndClearErr(13900005, "I/O error");
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1456,6 +1464,9 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Ge
     napi_callback_info mInfo = reinterpret_cast<napi_callback_info>(0x1122);
     napi_value nv = reinterpret_cast<napi_value>(0x1200);
     auto libnMock = LibnMock::GetMock();
+    auto fcntlMock = FcntlMock::GetMock();
+    FcntlMock::EnableMock();
+    EXPECT_CALL(*fcntlMock, fcntl(rafEntity->fd.get()->GetFD(), F_GETFL)).WillOnce(Return(O_RDONLY));
     EXPECT_CALL(*libnMock, InitArgs(testing::A<size_t>())).WillOnce(Return(true));
     EXPECT_CALL(*libnMock, GetThisVar()).WillOnce(Return(nv));
     EXPECT_CALL(*libnMock, napi_unwrap(_, _, _))
@@ -1463,7 +1474,9 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Ge
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::GetWriteStream(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900002);
+    testing::Mock::VerifyAndClearExpectations(fcntlMock.get());
+    libnMock->VerifyAndClearErr(13900012, "Permission denied");
+    FcntlMock::DisableMock();
     EXPECT_EQ(res, nullptr);
 }
 
