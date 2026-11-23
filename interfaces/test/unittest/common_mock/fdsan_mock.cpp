@@ -94,5 +94,27 @@ int fdsan_close_with_tag(int fd, uint64_t expected_tag)
     return realFdsanCloseWithTag(fd, expected_tag);
 }
 
+void fdsan_exchange_owner_tag(int fd, uint64_t expected_tag, uint64_t new_tag)
+{
+    if (FdsanMock::IsMockable()) {
+        FdsanMock::GetMock()->fdsan_exchange_owner_tag(fd, expected_tag, new_tag);
+        return;
+    }
+
+    static void (*realFdsanExchangeOwnerTag)(int, uint64_t, uint64_t) = []() {
+        auto func = (void (*)(int, uint64_t, uint64_t))dlsym(RTLD_NEXT, "fdsan_exchange_owner_tag");
+        if (!func) {
+            GTEST_LOG_(ERROR) << "Failed to resolve real fdsan_exchange_owner_tag: " << dlerror();
+        }
+        return func;
+    }();
+
+    if (!realFdsanExchangeOwnerTag) {
+        return;
+    }
+
+    realFdsanExchangeOwnerTag(fd, expected_tag, new_tag);
+}
+
 } // extern "C"
 #endif

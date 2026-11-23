@@ -40,6 +40,7 @@ using OHOS::FileManagement::ModuleFileIO::PREFIX_ADDR;
 static void SetFdTagSafe(int fd, uint64_t tag)
 {
     FdTagFunc::SetFdTag(fd, tag);
+    fdsan_exchange_owner_tag(fd, 0, tag);
 }
 
 static int CloseWithFdsan(int fd)
