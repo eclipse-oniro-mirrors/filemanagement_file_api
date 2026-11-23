@@ -27,12 +27,14 @@ public:
     virtual ~IFdsanMock() = default;
     virtual uint64_t fdsan_get_owner_tag(int fd) = 0;
     virtual int fdsan_close_with_tag(int fd, uint64_t expected_tag) = 0;
+    virtual void fdsan_exchange_owner_tag(int fd, uint64_t expected_tag, uint64_t new_tag) = 0;
 };
 
 class FdsanMock : public IFdsanMock {
 public:
     MOCK_METHOD(uint64_t, fdsan_get_owner_tag, (int), (override));
     MOCK_METHOD(int, fdsan_close_with_tag, (int, uint64_t), (override));
+    MOCK_METHOD(void, fdsan_exchange_owner_tag, (int, uint64_t, uint64_t), (override));
 
 public:
     static std::shared_ptr<FdsanMock> GetMock();

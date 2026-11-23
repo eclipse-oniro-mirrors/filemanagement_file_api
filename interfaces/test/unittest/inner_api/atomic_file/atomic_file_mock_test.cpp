@@ -224,6 +224,8 @@ HWTEST_F(AtomicFileMockTest, FinishWrite_WriteFail_HandlesGracefully, testing::e
         .WillRepeatedly(testing::Return(0));
     EXPECT_CALL(*fdsanMock, fdsan_get_owner_tag(testing::_))
         .WillRepeatedly(testing::Return(0));
+    EXPECT_CALL(*fdsanMock, fdsan_exchange_owner_tag(testing::_, testing::_, testing::_))
+        .WillRepeatedly(testing::Return());
 
     string content = "data that will fail to flush";
     stream->write(content.data(), content.size());

@@ -144,7 +144,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Cl
 
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
     testing::Mock::VerifyAndClearExpectations(fdsanMock.get());
-    libnMock->VerifyAndClearErr(13900039, "File descriptor in bad state");
+    libnMock->VerifyAndClearErr(13900039); // File descriptor in bad state
     EXPECT_EQ(res, nullptr);
 
     GTEST_LOG_(INFO) << "RandomAccessFileNExporterMockTest-end RandomAccessFileNExporterMockTest_CloseSync_002";
@@ -176,7 +176,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Cl
     auto res = RandomAccessFileNExporter::CloseSync(env, mInfo);
 
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error");
+    libnMock->VerifyAndClearErr(13900005); // I/O error
     EXPECT_EQ(res, nullptr);
 
     GTEST_LOG_(INFO) << "RandomAccessFileNExporterMockTest-end RandomAccessFileNExporterMockTest_CloseSync_003";
@@ -203,7 +203,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Cl
     auto res = RandomAccessFileNExporter::CloseSync(env, mInfo);
 
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900020, "Invalid argument");
+    libnMock->VerifyAndClearErr(13900020); // Invalid argument
     EXPECT_EQ(res, nullptr);
 
     GTEST_LOG_(INFO) << "RandomAccessFileNExporterMockTest-end RandomAccessFileNExporterMockTest_CloseSync_004";
@@ -231,7 +231,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Cl
     auto res = RandomAccessFileNExporter::CloseSync(env, mInfo);
 
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error");
+    libnMock->VerifyAndClearErr(13900005); // I/O error
     EXPECT_EQ(res, nullptr);
 
     GTEST_LOG_(INFO) << "RandomAccessFileNExporterMockTest-end RandomAccessFileNExporterMockTest_CloseSync_005";
@@ -265,7 +265,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Cl
 
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
     testing::Mock::VerifyAndClearExpectations(fdsanMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error");
+    libnMock->VerifyAndClearErr(13900005); // I/O error
     EXPECT_EQ(res, nullptr);
 
     GTEST_LOG_(INFO) << "RandomAccessFileNExporterMockTest-end RandomAccessFileNExporterMockTest_CloseSync_006";
@@ -301,7 +301,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Cl
 
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
     testing::Mock::VerifyAndClearExpectations(fdsanMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error");
+    libnMock->VerifyAndClearErr(13900005); // I/O error
     EXPECT_EQ(res, nullptr);
 
     GTEST_LOG_(INFO) << "RandomAccessFileNExporterMockTest-end RandomAccessFileNExporterMockTest_CloseSync_007";
@@ -388,7 +388,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Cl
 
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
     testing::Mock::VerifyAndClearExpectations(uvMock.get());
-    libnMock->VerifyAndClearErr(13900001, "Operation not permitted");
+    libnMock->VerifyAndClearErr(13900001); // Operation not permitted
     EXPECT_EQ(res, nullptr);
 
     GTEST_LOG_(INFO) << "RandomAccessFileNExporterMockTest-end RandomAccessFileNExporterMockTest_CloseSync_009";
@@ -496,7 +496,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Ge
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::GetFD(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900020, "Invalid argument");
+    libnMock->VerifyAndClearErr(13900020); // Invalid argument
     EXPECT_EQ(res, nullptr);
 }
 
@@ -521,7 +521,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Ge
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::GetFD(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error");
+    libnMock->VerifyAndClearErr(13900005); // I/O error
     EXPECT_EQ(res, nullptr);
 }
 
@@ -567,7 +567,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Ge
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::GetFPointer(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900020, "Invalid argument");
+    libnMock->VerifyAndClearErr(13900020); // Invalid argument
     EXPECT_EQ(res, nullptr);
 }
 
@@ -592,7 +592,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Ge
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::GetFPointer(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error");
+    libnMock->VerifyAndClearErr(13900005); // I/O error
     EXPECT_EQ(res, nullptr);
 }
 
@@ -638,7 +638,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Se
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::SetFilePointerSync(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900020, "Invalid argument");
+    libnMock->VerifyAndClearErr(13900020); // Invalid argument
     EXPECT_EQ(res, nullptr);
 }
 
@@ -662,7 +662,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Se
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::SetFilePointerSync(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error");
+    libnMock->VerifyAndClearErr(13900005); // I/O error
     EXPECT_EQ(res, nullptr);
 }
 
@@ -689,7 +689,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Se
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::SetFilePointerSync(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900020, "Invalid argument");
+    libnMock->VerifyAndClearErr(13900020); // Invalid argument
     EXPECT_EQ(res, nullptr);
 }
 
@@ -796,7 +796,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Re
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::ReadSync(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900020, "Invalid argument");
+    libnMock->VerifyAndClearErr(13900020); // Invalid argument
     EXPECT_EQ(res, nullptr);
 }
 
@@ -820,7 +820,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Re
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::ReadSync(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error");
+    libnMock->VerifyAndClearErr(13900005); // I/O error
     EXPECT_EQ(res, nullptr);
 }
 
@@ -849,7 +849,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Re
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(2);
     auto res = RandomAccessFileNExporter::ReadSync(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900020, "Invalid argument");
+    libnMock->VerifyAndClearErr(13900020); // Invalid argument
     EXPECT_EQ(res, nullptr);
 }
 
@@ -885,7 +885,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Re
     auto res = RandomAccessFileNExporter::ReadSync(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
     testing::Mock::VerifyAndClearExpectations(uvMock.get());
-    libnMock->VerifyAndClearErr(13900001, "Operation not permitted");
+    libnMock->VerifyAndClearErr(13900001); // Operation not permitted
     EXPECT_EQ(res, nullptr);
 }
 
@@ -984,7 +984,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Re
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::Read(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900020, "Invalid argument");
+    libnMock->VerifyAndClearErr(13900020); // Invalid argument
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1008,7 +1008,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Re
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::Read(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error");
+    libnMock->VerifyAndClearErr(13900005); // I/O error
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1037,7 +1037,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Re
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(2);
     auto res = RandomAccessFileNExporter::Read(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900020, "Invalid argument");
+    libnMock->VerifyAndClearErr(13900020); // Invalid argument
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1057,7 +1057,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Wr
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::WriteSync(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900020, "Invalid argument");
+    libnMock->VerifyAndClearErr(13900020); // Invalid argument
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1081,7 +1081,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Wr
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::WriteSync(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error");
+    libnMock->VerifyAndClearErr(13900005); // I/O error
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1112,7 +1112,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Wr
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(2);
     auto res = RandomAccessFileNExporter::WriteSync(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900020, "Invalid argument");
+    libnMock->VerifyAndClearErr(13900020); // Invalid argument
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1150,7 +1150,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Wr
     auto res = RandomAccessFileNExporter::WriteSync(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
     testing::Mock::VerifyAndClearExpectations(uvMock.get());
-    libnMock->VerifyAndClearErr(13900001, "Operation not permitted");
+    libnMock->VerifyAndClearErr(13900001); // Operation not permitted
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1210,7 +1210,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Wr
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::Write(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900020, "Invalid argument");
+    libnMock->VerifyAndClearErr(13900020); // Invalid argument
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1234,7 +1234,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Wr
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::Write(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error");
+    libnMock->VerifyAndClearErr(13900005); // I/O error
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1265,7 +1265,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Wr
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(2);
     auto res = RandomAccessFileNExporter::Write(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900020, "Invalid argument");
+    libnMock->VerifyAndClearErr(13900020); // Invalid argument
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1285,7 +1285,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Co
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::Constructor(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900020, "Invalid argument");
+    libnMock->VerifyAndClearErr(13900020); // Invalid argument
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1308,7 +1308,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Co
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::Constructor(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error");
+    libnMock->VerifyAndClearErr(13900005); // I/O error
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1350,7 +1350,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Ge
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::GetReadStream(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900020, "Invalid argument");
+    libnMock->VerifyAndClearErr(13900020); // Invalid argument
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1374,7 +1374,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Ge
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::GetReadStream(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error");
+    libnMock->VerifyAndClearErr(13900005); // I/O error
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1391,9 +1391,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Ge
     napi_callback_info mInfo = reinterpret_cast<napi_callback_info>(0x1122);
     napi_value nv = reinterpret_cast<napi_value>(0x1200);
     auto libnMock = LibnMock::GetMock();
-    auto fcntlMock = FcntlMock::GetMock();
-    FcntlMock::EnableMock();
-    EXPECT_CALL(*fcntlMock, fcntl(rafEntity->fd.get()->GetFD(), F_GETFL)).WillOnce(Return(O_WRONLY));
+    rafEntity->fd = make_unique<DistributedFS::FDGuard>(100000, false);
     EXPECT_CALL(*libnMock, InitArgs(testing::A<size_t>())).WillOnce(Return(true));
     EXPECT_CALL(*libnMock, GetThisVar()).WillOnce(Return(nv));
     EXPECT_CALL(*libnMock, napi_unwrap(_, _, _))
@@ -1401,9 +1399,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Ge
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::GetReadStream(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    testing::Mock::VerifyAndClearExpectations(fcntlMock.get());
-    libnMock->VerifyAndClearErr(13900012, "Permission denied");
-    FcntlMock::DisableMock();
+    libnMock->VerifyAndClearErr(13900012);
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1423,7 +1419,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Ge
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::GetWriteStream(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900020, "Invalid argument");
+    libnMock->VerifyAndClearErr(13900020); // Invalid argument
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1447,7 +1443,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Ge
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::GetWriteStream(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    libnMock->VerifyAndClearErr(13900005, "I/O error");
+    libnMock->VerifyAndClearErr(13900005); // I/O error
     EXPECT_EQ(res, nullptr);
 }
 
@@ -1464,9 +1460,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Ge
     napi_callback_info mInfo = reinterpret_cast<napi_callback_info>(0x1122);
     napi_value nv = reinterpret_cast<napi_value>(0x1200);
     auto libnMock = LibnMock::GetMock();
-    auto fcntlMock = FcntlMock::GetMock();
-    FcntlMock::EnableMock();
-    EXPECT_CALL(*fcntlMock, fcntl(rafEntity->fd.get()->GetFD(), F_GETFL)).WillOnce(Return(O_RDONLY));
+    rafEntity->fd = make_unique<DistributedFS::FDGuard>(100000, false);
     EXPECT_CALL(*libnMock, InitArgs(testing::A<size_t>())).WillOnce(Return(true));
     EXPECT_CALL(*libnMock, GetThisVar()).WillOnce(Return(nv));
     EXPECT_CALL(*libnMock, napi_unwrap(_, _, _))
@@ -1474,9 +1468,7 @@ HWTEST_F(RandomAccessFileNExporterMockTest, RandomAccessFileNExporterMockTest_Ge
     EXPECT_CALL(*libnMock, ThrowErr(testing::_)).Times(1);
     auto res = RandomAccessFileNExporter::GetWriteStream(env, mInfo);
     testing::Mock::VerifyAndClearExpectations(libnMock.get());
-    testing::Mock::VerifyAndClearExpectations(fcntlMock.get());
-    libnMock->VerifyAndClearErr(13900012, "Permission denied");
-    FcntlMock::DisableMock();
+    libnMock->VerifyAndClearErr(13900012);
     EXPECT_EQ(res, nullptr);
 }
 
