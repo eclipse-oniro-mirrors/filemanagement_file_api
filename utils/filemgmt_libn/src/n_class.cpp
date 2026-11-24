@@ -73,15 +73,16 @@ bool NClass::SaveClass(napi_env env, string className, napi_value exClass)
             lock_guard<std::mutex> wrapLock(nClass.wrapLock);
             nClass.wrapReleased = false;
         } else {
-            HILOGW("Cleanup_hook registers on a new env while exClassMap is not empty");
+            HILOGW("Cleanup_hook already registered on another env, "
+                   "registering on current env while exClassMap is not empty");
         }
         napi_status status = napi_add_env_cleanup_hook(env, CleanClass, &nClass);
         if (status != napi_ok) {
-            HILOGE("INNER BUG. Cleanup_hook registration has failed because of %{public}d, env %{public}p, "
-                   "class %{public}s", status, env, className.c_str());
+            HILOGE("INNER BUG. Cleanup_hook registration has failed on current env, "
+                   "class %{public}s, status %{public}d", className.c_str(), status);
         } else {
             nClass.env = env;
-            HILOGD("Cleanup_hook registered on env %{public}p for class %{public}s", env, className.c_str());
+            HILOGD("Cleanup_hook registered on current env for class %{public}s", className.c_str());
         }
     }
     return res == napi_ok;
